@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "glowcase:block/hyperlink_block" }
+  }
+}

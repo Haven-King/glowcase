@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "dev.hephaestus.glowcase.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "block.EntityShapeContextAccessor"
+  ],
+  "client": [
+    "client.render.entity.EntityRenderDispatcherAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
