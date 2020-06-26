@@ -49,7 +49,7 @@ public class TextBlockEditScreen extends Screen {
 
 	@Override
 	public void init(MinecraftClient client, int width, int height) {
-		this.client = client;
+		super.init(client, width, height);
 		this.client.keyboard.enableRepeatEvents(true);
 
 		this.selectionManager = new SelectionManager(
@@ -116,14 +116,14 @@ public class TextBlockEditScreen extends Screen {
 		if (this.client != null) {
 			fill(matrices, 0, 0, this.client.getWindow().getFramebufferWidth(),  this.client.getWindow().getFramebufferHeight(), 0x88000000);
 
-			int width = this.client.getWindow().getScaledWidth();
-			int height = this.client.getWindow().getScaledHeight();
-
 			matrices.push();
-			matrices.translate(width / 10F, (height - this.textBlockEntity.lines.size() * 12) / 2F, 0);
 
 			for (int i = 0; i < this.textBlockEntity.lines.size(); ++i) {
-				this.client.textRenderer.drawWithShadow(matrices, this.textBlockEntity.lines.get(i), 0, i * 12, this.textBlockEntity.color);
+				switch(this.textBlockEntity.textAlignment) {
+					case LEFT: 		this.client.textRenderer.drawWithShadow(matrices, this.textBlockEntity.lines.get(i), this.width / 10F, this.width / 10F + i * 12, this.textBlockEntity.color); break;
+					case CENTER:	this.client.textRenderer.drawWithShadow(matrices, this.textBlockEntity.lines.get(i), this.width / 2F - this.textRenderer.getWidth(this.textBlockEntity.lines.get(i)) / 2F, this.width / 10F + i * 12, this.textBlockEntity.color); break;
+					case RIGHT: 	this.client.textRenderer.drawWithShadow(matrices, this.textBlockEntity.lines.get(i), this.width - this.width / 10F - this.textRenderer.getWidth(this.textBlockEntity.lines.get(i)), this.width / 10F + i * 12, this.textBlockEntity.color); break;
+				}
 			}
 
 			int caretStart = this.selectionManager.getSelectionStart();
