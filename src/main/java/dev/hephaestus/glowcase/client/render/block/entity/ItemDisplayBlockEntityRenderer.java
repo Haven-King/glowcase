@@ -16,6 +16,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SpawnEggItem;
+import net.minecraft.state.property.Properties;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -34,15 +35,22 @@ public class ItemDisplayBlockEntityRenderer extends BlockEntityRenderer<ItemDisp
 		matrices.push();
 		matrices.translate(0.5D, 0D, 0.5D);
 
-		double d = entity.getPos().getX() - camera.getPos().x + 0.5;
-		double e = entity.getPos().getY() - camera.getPos().y + 0.5;
-		double f = entity.getPos().getZ() - camera.getPos().z + 0.5;
-		double g = MathHelper.sqrt(d * d + f * f);
+		float yaw = 0F;
+		float pitch = 0F;
 
-		float yaw = (float) (-MathHelper.atan2(f, d) + Math.PI / 2);
-		float pitch = (float) ((-MathHelper.atan2(e, g)));
+		if (entity.isTracking()) {
+			double d = entity.getPos().getX() - camera.getPos().x + 0.5;
+			double e = entity.getPos().getY() - camera.getPos().y + 0.5;
+			double f = entity.getPos().getZ() - camera.getPos().z + 0.5;
+			double g = MathHelper.sqrt(d * d + f * f);
 
-		matrices.multiply(Vector3f.POSITIVE_Y.getRadialQuaternion(yaw));
+			yaw = (float) (-MathHelper.atan2(f, d) + Math.PI / 2);
+			pitch = (float) ((-MathHelper.atan2(e, g)));
+			matrices.multiply(Vector3f.POSITIVE_Y.getRadialQuaternion(yaw));
+		} else {
+			float rotation = -(entity.getCachedState().get(Properties.ROTATION) * 360) / 16.0F;
+			matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(rotation));
+		}
 
 		ItemStack stack = entity.getUseStack();
 		Text name;
