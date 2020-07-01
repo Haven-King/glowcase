@@ -61,7 +61,6 @@ public class TextBlockEditScreen extends Screen {
 
 		this.increaseSize = new ButtonWidget(100, 0, 20, 20, new LiteralText("+"), action -> {
 			this.textBlockEntity.scale += 0.125;
-			this.save();
 		});
 
 		this.decreaseSize = new ButtonWidget(80, 0, 20, 20, new LiteralText("-"), action -> {
@@ -77,7 +76,6 @@ public class TextBlockEditScreen extends Screen {
 			}
 
 			this.changeAlignment.setMessage(new TranslatableText("gui.glowcase.alignment", this.textBlockEntity.textAlignment));
-			this.save();
 		});
 
 		this.colorEntryWidget = new TextFieldWidget(this.client.textRenderer, 300, 0, 50, 20, LiteralText.EMPTY);
@@ -85,7 +83,6 @@ public class TextBlockEditScreen extends Screen {
 		this.colorEntryWidget.setChangedListener(string -> {
 			TextColor color = TextColor.parse(this.colorEntryWidget.getText());
 			this.textBlockEntity.color = color == null ? 0xFFFFFFFF : color.getRgb() | 0xFF000000;
-			this.save();
 		});
 
 		this.zOffsetToggle = new ButtonWidget(360, 0, 80, 20, new LiteralText(this.textBlockEntity.zOffset.name()), action -> {
@@ -96,7 +93,6 @@ public class TextBlockEditScreen extends Screen {
 			}
 
 			this.zOffsetToggle.setMessage(new LiteralText(this.textBlockEntity.zOffset.name()));
-			this.save();
 		});
 
 		this.addButton(this.increaseSize);
@@ -109,6 +105,12 @@ public class TextBlockEditScreen extends Screen {
 	@Override
 	public void tick() {
 		++this.ticksSinceOpened;
+	}
+
+	@Override
+	public void onClose() {
+		this.save();
+		super.onClose();
 	}
 
 	@Override
@@ -137,11 +139,22 @@ public class TextBlockEditScreen extends Screen {
 				String preSelection = line.substring(0, MathHelper.clamp(line.length(), 0, selectionStart));
 				int startX = this.client.textRenderer.getWidth(preSelection);
 
+				float push;
+				switch(this.textBlockEntity.textAlignment) {
+					case LEFT:      push = this.width / 10F; break;
+					case CENTER:    push = this.width / 2F - this.textRenderer.getWidth(line) / 2F; break;
+					case RIGHT:     push = this.width - this.width / 10F - this.textRenderer.getWidth(line); break;
+					default:        push = 0;
+				}
+
+				startX += push;
+
+
 				if (this.ticksSinceOpened / 6 % 2 == 0 && !this.colorEntryWidget.isActive()) {
 					if (selectionStart < line.length()) {
-						fill(matrices, startX, this.currentRow * 12, startX + 1, this.currentRow * 12 + 9, 0xCCFFFFFF);
+						fill(matrices, startX, (int) (this.width / 10F + this.currentRow * 12), startX + 1, (int) (this.width / 10F + this.currentRow * 12) + 9, 0xCCFFFFFF);
 					} else {
-						this.client.textRenderer.draw(matrices, "_", startX, this.currentRow * 12, 0xFFFFFFFF);
+						this.client.textRenderer.draw(matrices, "_", startX, (int) (this.width / 10F + this.currentRow * 12), 0xFFFFFFFF);
 					}
 				}
 

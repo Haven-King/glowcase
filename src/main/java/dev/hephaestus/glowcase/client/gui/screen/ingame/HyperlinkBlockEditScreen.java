@@ -56,12 +56,6 @@ public class HyperlinkBlockEditScreen extends Screen {
 
 		this.urlEntryWidget = new TextFieldWidget(this.client.textRenderer, width / 10, height / 2 - 10, 8 * width / 10, 20, LiteralText.EMPTY);
 		this.urlEntryWidget.setText(this.hyperlinkBlockEntity.url);
-		this.urlEntryWidget.setChangedListener(string -> {
-			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-			buf.writeBlockPos(this.hyperlinkBlockEntity.getPos());
-			buf.writeString(this.urlEntryWidget.getText());
-			ClientSidePacketRegistry.INSTANCE.sendToServer(Glowcase.SAVE_HYPERLINK_SCREEN, buf);
-		});
 
 		this.urlEntryWidget.setMaxLength(Integer.MAX_VALUE);
 
@@ -83,6 +77,15 @@ public class HyperlinkBlockEditScreen extends Screen {
 		}else {
 			return false;
 		}
+	}
+
+	@Override
+	public void onClose() {
+		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+		buf.writeBlockPos(this.hyperlinkBlockEntity.getPos());
+		buf.writeString(this.urlEntryWidget.getText());
+		ClientSidePacketRegistry.INSTANCE.sendToServer(Glowcase.SAVE_HYPERLINK_SCREEN, buf);
+		super.onClose();
 	}
 
 	@Override

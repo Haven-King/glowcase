@@ -3,6 +3,7 @@
   "id": "glowcase",
   "version": "${version}",
   "name": "Glowcase",
+  "description": "A small collection of blocks to make showcasing things easier",
   "license": "Apache-2.0",
   "icon": "assets/glowcase/icon.png",
   "environment": "*",
