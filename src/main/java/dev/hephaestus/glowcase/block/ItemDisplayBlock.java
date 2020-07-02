@@ -1,7 +1,10 @@
 package dev.hephaestus.glowcase.block;
 
+import dev.hephaestus.glowcase.GlowcaseNetworking;
 import dev.hephaestus.glowcase.block.entity.ItemDisplayBlockEntity;
 import dev.hephaestus.glowcase.item.GlowcaseItem;
+import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
@@ -10,6 +13,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
@@ -57,18 +61,23 @@ public class ItemDisplayBlock extends GlowcaseBlock implements BlockEntityProvid
 			BlockEntity blockEntity = world.getBlockEntity(pos);
 			ItemStack handStack = player.getStackInHand(hand);
 			if (blockEntity instanceof ItemDisplayBlockEntity) {
-				if (((ItemDisplayBlockEntity) blockEntity).hasItem() && handStack.isEmpty()) {
+				if (((ItemDisplayBlockEntity) blockEntity).givesItem && ((ItemDisplayBlockEntity) blockEntity).hasItem() && handStack.isEmpty()) {
 					player.setStackInHand(hand, ((ItemDisplayBlockEntity) blockEntity).getUseStack().copy());
 					return ActionResult.SUCCESS;
-				} else if (!((ItemDisplayBlockEntity) blockEntity).hasItem() && !handStack.isEmpty()) {
-					((ItemDisplayBlockEntity) blockEntity).setStack(handStack.copy());
-					return ActionResult.SUCCESS;
-				} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && handStack.getItem() instanceof GlowcaseItem) {
-					((ItemDisplayBlockEntity) blockEntity).setStack(ItemStack.EMPTY);
-					return ActionResult.SUCCESS;
-				} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && ((ItemDisplayBlockEntity) blockEntity).getUseStack().isItemEqualIgnoreDamage(handStack)) {
-					((ItemDisplayBlockEntity) blockEntity).toggleTracking();
-					return ActionResult.SUCCESS;
+				} else if (world.canPlayerModifyAt(player, pos)) {
+					if (!((ItemDisplayBlockEntity) blockEntity).hasItem() && !handStack.isEmpty()) {
+						((ItemDisplayBlockEntity) blockEntity).setStack(handStack.copy());
+						return ActionResult.SUCCESS;
+					} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && handStack.getItem() instanceof GlowcaseItem) {
+						((ItemDisplayBlockEntity) blockEntity).setStack(ItemStack.EMPTY);
+						return ActionResult.SUCCESS;
+					} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && ((ItemDisplayBlockEntity) blockEntity).getUseStack().isItemEqualIgnoreDamage(handStack)) {
+						PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+						buf.writeBlockPos(pos);
+
+						ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, GlowcaseNetworking.OPEN_ITEM_DISPLAY_SCREEN, buf);
+						return ActionResult.SUCCESS;
+					}
 				}
 			}
 

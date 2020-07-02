@@ -1,6 +1,6 @@
 package dev.hephaestus.glowcase.client.gui.screen.ingame;
 
-import dev.hephaestus.glowcase.Glowcase;
+import dev.hephaestus.glowcase.GlowcaseNetworking;
 import dev.hephaestus.glowcase.block.entity.HyperlinkBlockEntity;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
@@ -10,9 +10,7 @@ import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmChatLinkScreen;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Util;
@@ -20,20 +18,18 @@ import net.minecraft.util.math.BlockPos;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
-public class HyperlinkBlockEditScreen extends Screen {
+public class HyperlinkBlockEditScreen extends GlowcaseScreen {
 	private final HyperlinkBlockEntity hyperlinkBlockEntity;
 
 	private TextFieldWidget urlEntryWidget;
 
 	protected HyperlinkBlockEditScreen(HyperlinkBlockEntity hyperlinkBlockEntity) {
-		super(LiteralText.EMPTY);
 		this.hyperlinkBlockEntity = hyperlinkBlockEntity;
 	}
 
 	@Environment(EnvType.CLIENT)
 	public static void openUrl(PacketContext context, PacketByteBuf buf) {
 		String url = buf.readString();
-
 
 		context.getTaskQueue().execute(() -> {
 			MinecraftClient.getInstance().openScreen(new ConfirmChatLinkScreen(
@@ -63,14 +59,9 @@ public class HyperlinkBlockEditScreen extends Screen {
 	}
 
 	@Override
-	public boolean isPauseScreen() {
-		return false;
-	}
-
-	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 		if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE) {
-			MinecraftClient.getInstance().openScreen(null);
+			this.onClose();
 			return true;
 		} else if (this.urlEntryWidget.isActive()) {
 			return this.urlEntryWidget.keyPressed(keyCode, scanCode, modifiers);
@@ -84,17 +75,8 @@ public class HyperlinkBlockEditScreen extends Screen {
 		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 		buf.writeBlockPos(this.hyperlinkBlockEntity.getPos());
 		buf.writeString(this.urlEntryWidget.getText());
-		ClientSidePacketRegistry.INSTANCE.sendToServer(Glowcase.SAVE_HYPERLINK_SCREEN, buf);
+		ClientSidePacketRegistry.INSTANCE.sendToServer(GlowcaseNetworking.SAVE_HYPERLINK, buf);
 		super.onClose();
-	}
-
-	@Override
-	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		if (this.client != null) {
-			fill(matrices, 0, 0, this.client.getWindow().getFramebufferWidth(), this.client.getWindow().getFramebufferHeight(), 0x88000000);
-
-			this.urlEntryWidget.render(matrices, mouseX, mouseY, delta);
-		}
 	}
 
 	public static void open(PacketContext context, PacketByteBuf buf) {

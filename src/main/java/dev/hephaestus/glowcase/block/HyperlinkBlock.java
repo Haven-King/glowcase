@@ -1,6 +1,7 @@
 package dev.hephaestus.glowcase.block;
 
 import dev.hephaestus.glowcase.Glowcase;
+import dev.hephaestus.glowcase.GlowcaseNetworking;
 import dev.hephaestus.glowcase.block.entity.HyperlinkBlockEntity;
 import dev.hephaestus.glowcase.item.GlowcaseItem;
 import io.netty.buffer.Unpooled;
@@ -43,7 +44,7 @@ public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider
 				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 				buf.writeBlockPos(pos);
 
-				ServerSidePacketRegistry.INSTANCE.sendToPlayer((PlayerEntity) placer, Glowcase.OPEN_HYPERLINK_SCREEN, buf);
+				ServerSidePacketRegistry.INSTANCE.sendToPlayer((PlayerEntity) placer, GlowcaseNetworking.OPEN_HYPERLINK_SCREEN, buf);
 			}
 		}
 	}
@@ -63,7 +64,7 @@ public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider
 				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 				buf.writeString(url);
 
-				ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, Glowcase.OPEN_HYPERLINK_CONFIRMATION, buf);
+				ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, GlowcaseNetworking.OPEN_HYPERLINK_CONFIRMATION, buf);
 
 				return ActionResult.SUCCESS;
 			} else {

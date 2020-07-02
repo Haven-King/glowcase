@@ -22,6 +22,7 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 	public List<MutableText> lines = new ArrayList<>();
 	public TextAlignment textAlignment = TextAlignment.CENTER;
 	public  ZOffset zOffset = ZOffset.CENTER;
+	public ShadowType shadowType = ShadowType.DROP;
 	public float scale = 1F;
 	public int color = 0xFFFFFF;
 
@@ -39,6 +40,7 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 
 		tag.putString("text_alignment", this.textAlignment.name());
 		tag.putString("z_offset", this.zOffset.name());
+		tag.putString("shadow_type", this.shadowType.name());
 
 		ListTag lines = tag.getList("lines", 8);
 		for (MutableText text : this.lines) {
@@ -57,8 +59,10 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 		this.lines = new ArrayList<>();
 		this.scale = tag.getFloat("scale");
 		this.color = tag.getInt("color");
+
 		this.textAlignment = TextAlignment.valueOf(tag.getString("text_alignment"));
 		this.zOffset = ZOffset.valueOf(tag.getString("z_offset"));
+		this.shadowType = tag.contains("shadow_type") ? ShadowType.valueOf(tag.getString("shadow_type")) : ShadowType.DROP;
 
 		ListTag lines = tag.getList("lines", 8);
 		for (Tag line : lines) {
@@ -83,6 +87,7 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 		TextAlignment alignment = buf.readEnumConstant(TextAlignment.class);
 		int color = buf.readVarInt();
 		ZOffset zOffset = buf.readEnumConstant(ZOffset.class);
+		ShadowType shadowType = buf.readEnumConstant(ShadowType.class);
 
 		List<MutableText> lines = new ArrayList<>();
 		for (int i = 0; i < lineCount; ++i) {
@@ -97,6 +102,7 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 				((TextBlockEntity) blockEntity).textAlignment = alignment;
 				((TextBlockEntity) blockEntity).color = color;
 				((TextBlockEntity) blockEntity).zOffset = zOffset;
+				((TextBlockEntity) blockEntity).shadowType = shadowType;
 				((TextBlockEntity) blockEntity).sync();
 			}
 		});
@@ -108,5 +114,9 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 
 	public enum ZOffset {
 		FRONT, CENTER, BACK
+	}
+
+	public enum ShadowType {
+		DROP, PLATE, NONE
 	}
 }

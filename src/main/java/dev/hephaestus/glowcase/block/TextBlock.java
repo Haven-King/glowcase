@@ -1,6 +1,6 @@
 package dev.hephaestus.glowcase.block;
 
-import dev.hephaestus.glowcase.Glowcase;
+import dev.hephaestus.glowcase.GlowcaseNetworking;
 import dev.hephaestus.glowcase.block.entity.TextBlockEntity;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -53,7 +53,7 @@ public class TextBlock extends GlowcaseBlock implements BlockEntityProvider {
 				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 				buf.writeBlockPos(pos);
 
-				ServerSidePacketRegistry.INSTANCE.sendToPlayer(((ServerPlayerEntity) placer), Glowcase.OPEN_TEXT_BLOCK_SCREEN, buf);
+				ServerSidePacketRegistry.INSTANCE.sendToPlayer(((ServerPlayerEntity) placer), GlowcaseNetworking.OPEN_TEXT_BLOCK_SCREEN, buf);
 			}
 		}
 	}

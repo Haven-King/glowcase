@@ -9,10 +9,12 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "dev.hephaestus.glowcase.Glowcase"
+      "dev.hephaestus.glowcase.Glowcase",
+      "dev.hephaestus.glowcase.GlowcaseNetworking"
     ],
     "client": [
-      "dev.hephaestus.glowcase.GlowcaseClient"
+      "dev.hephaestus.glowcase.GlowcaseClient",
+      "dev.hephaestus.glowcase.GlowcaseNetworking"
     ]
   },
   "mixins": [

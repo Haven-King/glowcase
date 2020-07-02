@@ -23,7 +23,7 @@ public class Glowcase implements ModInitializer {
 
 	public static final Block TEXT_BLOCK = Registry.register(Registry.BLOCK, id("text_block"), new TextBlock());
 	public static final Item TEXT_BLOCK_ITEM = Registry.register(Registry.ITEM, id("text_block"), new GlowcaseItem(TEXT_BLOCK));
-	public static final BlockEntityType<TextBlockEntity> TEXT_BLOCK_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, id("text_block"), BlockEntityType.Builder.create(TextBlockEntity::new, TEXT_BLOCK).build(null));;
+	public static final BlockEntityType<TextBlockEntity> TEXT_BLOCK_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, id("text_block"), BlockEntityType.Builder.create(TextBlockEntity::new, TEXT_BLOCK).build(null));
 
 	public static final Block HYPERLINK_BLOCK = Registry.register(Registry.BLOCK, id("hyperlink_block"), new HyperlinkBlock());
 	public static final Item HYPERLINK_BLOCK_ITEM = Registry.register(Registry.ITEM, id("hyperlink_block"), new GlowcaseItem(HYPERLINK_BLOCK));
@@ -33,20 +33,11 @@ public class Glowcase implements ModInitializer {
 	public static final Item ITEM_DISPLAY_BLOCK_ITEM = Registry.register(Registry.ITEM, id("item_display_block"), new GlowcaseItem(ITEM_DISPLAY_BLOCK));
 	public static final BlockEntityType<ItemDisplayBlockEntity> ITEM_DISPLAY_BLOCK_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, id("item_display_block"), BlockEntityType.Builder.create(ItemDisplayBlockEntity::new, ITEM_DISPLAY_BLOCK).build(null));
 
-	public static final Identifier OPEN_TEXT_BLOCK_SCREEN = id("packet", "text_block", "open");
-	public static final Identifier SAVE_TEXT_BLOCK_CHANGE = id("packet", "text_block", "save");
-
-	public static final Identifier OPEN_HYPERLINK_SCREEN = id("packet", "hyperlink_block", "open");
-	public static final Identifier SAVE_HYPERLINK_SCREEN = id("packet", "hyperlink_block", "save");
-	public static final Identifier OPEN_HYPERLINK_CONFIRMATION = id("packet", "hyperlink_block", "confirmation");
-
 	public static Identifier id(String... path) {
 		return new Identifier(MODID, String.join(".", path));
 	}
 
 	@Override
 	public void onInitialize() {
-		ServerSidePacketRegistry.INSTANCE.register(SAVE_TEXT_BLOCK_CHANGE, TextBlockEntity::save);
-		ServerSidePacketRegistry.INSTANCE.register(SAVE_HYPERLINK_SCREEN, HyperlinkBlockEntity::save);
 	}
 }

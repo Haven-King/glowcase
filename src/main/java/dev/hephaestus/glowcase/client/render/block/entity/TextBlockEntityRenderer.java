@@ -3,6 +3,7 @@ package dev.hephaestus.glowcase.client.render.block.entity;
 import dev.hephaestus.glowcase.block.entity.TextBlockEntity;
 import net.minecraft.block.SignBlock;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
@@ -55,7 +56,17 @@ public class TextBlockEntityRenderer extends BlockEntityRenderer<TextBlockEntity
 
 			matrices.push();
 			matrices.translate(dX, 0, 0);
-			textRenderer.drawWithShadow(matrices, blockEntity.lines.get(i), 0, i * 12, blockEntity.color);
+
+			if (blockEntity.shadowType == TextBlockEntity.ShadowType.PLATE && width > 0) {
+				DrawableHelper.fill(matrices, -5, i * 12 - 2, (int) width + 5, (i + 1) * 12 - 2, 0x44000000);
+			}
+
+			if (blockEntity.shadowType == TextBlockEntity.ShadowType.DROP) {
+				textRenderer.drawWithShadow(matrices, blockEntity.lines.get(i), 0, i * 12, blockEntity.color);
+			} else {
+				textRenderer.draw(matrices, blockEntity.lines.get(i), 0, i * 12, blockEntity.color);
+			}
+
 			matrices.pop();
 		}
 
