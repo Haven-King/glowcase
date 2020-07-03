@@ -1,5 +1,4 @@
 {
-	"credit": "Made with Blockbench",
 	"textures": {
 		"0": "glowcase:item/hyperlink_block",
 		"particle": "glowcase:item/hyperlink_block"

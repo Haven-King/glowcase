@@ -2,6 +2,7 @@ package dev.hephaestus.glowcase;
 
 import dev.hephaestus.glowcase.block.HyperlinkBlock;
 import dev.hephaestus.glowcase.block.ItemDisplayBlock;
+import dev.hephaestus.glowcase.block.MailboxBlock;
 import dev.hephaestus.glowcase.block.TextBlock;
 import dev.hephaestus.glowcase.block.entity.HyperlinkBlockEntity;
 import dev.hephaestus.glowcase.block.entity.ItemDisplayBlockEntity;
@@ -32,6 +33,9 @@ public class Glowcase implements ModInitializer {
 	public static final Block ITEM_DISPLAY_BLOCK = Registry.register(Registry.BLOCK, id("item_display_block"), new ItemDisplayBlock());
 	public static final Item ITEM_DISPLAY_BLOCK_ITEM = Registry.register(Registry.ITEM, id("item_display_block"), new GlowcaseItem(ITEM_DISPLAY_BLOCK));
 	public static final BlockEntityType<ItemDisplayBlockEntity> ITEM_DISPLAY_BLOCK_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, id("item_display_block"), BlockEntityType.Builder.create(ItemDisplayBlockEntity::new, ITEM_DISPLAY_BLOCK).build(null));
+
+//	public static final Block MAILBOX_BLOCK = Registry.register(Registry.BLOCK, id("mailbox_block"), new MailboxBlock());
+//	public static final Item MAILBOX_BLOCK_ITEM = Registry.register(Registry.ITEM, id("mailbox_block"), new GlowcaseItem(MAILBOX_BLOCK));
 
 	public static Identifier id(String... path) {
 		return new Identifier(MODID, String.join(".", path));

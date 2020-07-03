@@ -14,6 +14,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,6 +107,11 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 				((TextBlockEntity) blockEntity).sync();
 			}
 		});
+	}
+
+	@Override
+	public double getSquaredRenderDistance() {
+		return MathHelper.clamp(this.scale * 12D, 40D, 400D);
 	}
 
 	public enum TextAlignment {

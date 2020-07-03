@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "glowcase:block/mailbox_block" },
+    "facing=east": { "model": "glowcase:block/mailbox_block", "y": 90 },
+    "facing=south": { "model": "glowcase:block/mailbox_block", "y": 180 },
+    "facing=west": { "model": "glowcase:block/mailbox_block", "y": 270 }
+  }
+}

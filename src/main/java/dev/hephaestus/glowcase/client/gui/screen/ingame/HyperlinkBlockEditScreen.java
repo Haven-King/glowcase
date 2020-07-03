@@ -52,6 +52,7 @@ public class HyperlinkBlockEditScreen extends GlowcaseScreen {
 
 		this.urlEntryWidget = new TextFieldWidget(this.client.textRenderer, width / 10, height / 2 - 10, 8 * width / 10, 20, LiteralText.EMPTY);
 		this.urlEntryWidget.setText(this.hyperlinkBlockEntity.url);
+		this.urlEntryWidget.setMaxLength(Integer.MAX_VALUE);
 
 		this.urlEntryWidget.setMaxLength(Integer.MAX_VALUE);
 

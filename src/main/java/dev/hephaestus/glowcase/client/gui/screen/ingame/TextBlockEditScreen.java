@@ -277,7 +277,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 		int topOffset = (int) (40 + 2 * this.width / 100F);
 		if (mouseY > topOffset) {
 			this.currentRow = MathHelper.clamp((int) (mouseY - topOffset) / 12, 0, this.textBlockEntity.lines.size() - 1);
-
+			this.setFocused(null);
 			return true;
 		} else {
 			return super.mouseClicked(mouseX, mouseY, button);
