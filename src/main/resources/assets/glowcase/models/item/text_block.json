@@ -1,3 +1,6 @@
 {
-  "parent": "block/mailbox_block"
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "glowcase:item/text_block"
+  }
 }

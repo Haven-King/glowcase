@@ -267,7 +267,13 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 				this.textBlockEntity.lines.remove(this.currentRow + 1);
 				return true;
 			} else {
-				return this.selectionManager.handleSpecialKey(keyCode) || super.keyPressed(keyCode, scanCode, modifiers);
+				try {
+					return this.selectionManager.handleSpecialKey(keyCode) || super.keyPressed(keyCode, scanCode, modifiers);
+				} catch (StringIndexOutOfBoundsException e) {
+					e.printStackTrace();
+					MinecraftClient.getInstance().openScreen(null);
+					return false;
+				}
 			}
 		}
 	}
