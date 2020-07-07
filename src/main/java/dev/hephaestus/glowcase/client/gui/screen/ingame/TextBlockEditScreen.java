@@ -151,10 +151,10 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 			int caretEnd = this.selectionManager.getSelectionEnd();
 
 			if (caretStart >= 0) {
-				int selectionStart = Math.min(caretStart, caretEnd);
-				int selectionEnd = Math.max(caretStart, caretEnd);
-
 				String line = this.textBlockEntity.lines.get(this.currentRow).getString();
+				int selectionStart = MathHelper.clamp(Math.min(caretStart, caretEnd), 0, line.length() - 1);
+				int selectionEnd = MathHelper.clamp(Math.max(caretStart, caretEnd), 0, line.length() - 1);
+
 				String preSelection = line.substring(0, MathHelper.clamp(line.length(), 0, selectionStart));
 				int startX = this.client.textRenderer.getWidth(preSelection);
 
@@ -238,7 +238,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 								MathHelper.clamp(this.selectionManager.getSelectionStart(), 0, this.textBlockEntity.lines.get(this.currentRow).getString().length()))
 				));
 				this.textBlockEntity.lines.set(this.currentRow, new LiteralText(
-						this.textBlockEntity.lines.get(this.currentRow).getString().substring(0, this.selectionManager.getSelectionStart())
+						this.textBlockEntity.lines.get(this.currentRow).getString().substring(0, MathHelper.clamp(this.selectionManager.getSelectionStart(), 0, this.textBlockEntity.lines.get(this.currentRow).getString().length()))
 				));
 				++this.currentRow;
 				this.selectionManager.moveCaretToEnd();
