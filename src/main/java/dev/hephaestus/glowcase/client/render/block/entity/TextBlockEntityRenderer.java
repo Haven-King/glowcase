@@ -68,18 +68,13 @@ public class TextBlockEntityRenderer extends BakedBlockEntityRenderer<TextBlockE
 			}
 
 			if (blockEntity.shadowType == TextBlockEntity.ShadowType.DROP) {
-				textRenderer.draw(blockEntity.lines.get(i), 0, i * 12, blockEntity.color, false, matrices.peek().getModel(), vertexConsumers, false, 0, 15728880);
 				// Don't use the vanilla shadow rendering - it breaks when you try to use it in 3D
-				int red = (blockEntity.color >> 24 & 255) / 4;
-				int green = (blockEntity.color >> 16 & 255) / 4;
-				int blue = (blockEntity.color >> 8 & 255) / 4;
-				int alpha = blockEntity.color & 255;
-				int shadowColor = (red << 24) & (green << 16) & (blue << 8) & alpha;
+				int shadowColor = 0x88000000;
 				matrices.translate(0, 0, -0.005D);
-				textRenderer.draw(blockEntity.lines.get(i), 1, (i * 12) + 1, shadowColor, false, matrices.peek().getModel(), vertexConsumers, false, 0, 15728880);
-			} else {
-				textRenderer.draw(blockEntity.lines.get(i), 0, i * 12, blockEntity.color, false, matrices.peek().getModel(), vertexConsumers, false, 0, 15728880);
+				textRenderer.draw(blockEntity.lines.get(i), 1, (i * 12) + 1, shadowColor, false, matrices.peek().getModel(), vertexConsumers, true, 0, 15728880);
 			}
+
+			textRenderer.draw(blockEntity.lines.get(i), 0, i * 12, blockEntity.color, false, matrices.peek().getModel(), vertexConsumers, false, 0, 15728880);
 
 			matrices.pop();
 		}
