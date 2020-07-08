@@ -160,10 +160,10 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 
 			if (caretStart >= 0) {
 				String line = this.textBlockEntity.lines.get(this.currentRow).getString();
-				int selectionStart = MathHelper.clamp(Math.min(caretStart, caretEnd), 0, line.length() - 1);
-				int selectionEnd = MathHelper.clamp(Math.max(caretStart, caretEnd), 0, line.length() - 1);
+				int selectionStart = MathHelper.clamp(Math.min(caretStart, caretEnd), 0, line.length());
+				int selectionEnd = MathHelper.clamp(Math.max(caretStart, caretEnd), 0, line.length());
 
-				String preSelection = line.substring(0, MathHelper.clamp(line.length() - 1, 0, selectionStart));
+				String preSelection = line.substring(0, MathHelper.clamp(line.length(), 0, selectionStart));
 				int startX = this.client.textRenderer.getWidth(preSelection);
 
 				float push;

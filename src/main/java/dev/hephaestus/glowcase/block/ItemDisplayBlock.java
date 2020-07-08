@@ -14,6 +14,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
@@ -64,7 +65,7 @@ public class ItemDisplayBlock extends GlowcaseBlock implements BlockEntityProvid
 				if (((ItemDisplayBlockEntity) blockEntity).givesItem && ((ItemDisplayBlockEntity) blockEntity).hasItem() && handStack.isEmpty()) {
 					player.setStackInHand(hand, ((ItemDisplayBlockEntity) blockEntity).getUseStack().copy());
 					return ActionResult.SUCCESS;
-				} else if (world.canPlayerModifyAt(player, pos)) {
+				} else if (player.isCreative() && world.canPlayerModifyAt(player, pos)) {
 					if (!((ItemDisplayBlockEntity) blockEntity).hasItem() && !handStack.isEmpty()) {
 						((ItemDisplayBlockEntity) blockEntity).setStack(handStack.copy());
 						return ActionResult.SUCCESS;
