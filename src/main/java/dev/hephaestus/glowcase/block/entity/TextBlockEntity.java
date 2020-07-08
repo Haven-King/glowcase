@@ -1,6 +1,7 @@
 package dev.hephaestus.glowcase.block.entity;
 
 import dev.hephaestus.glowcase.Glowcase;
+import dev.hephaestus.glowcase.client.render.block.entity.BakedBlockEntityRenderer;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.block.BlockState;
@@ -26,6 +27,7 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 	public ShadowType shadowType = ShadowType.DROP;
 	public float scale = 1F;
 	public int color = 0xFFFFFF;
+	public boolean renderDirty = true;
 
 	public TextBlockEntity() {
 		super(Glowcase.TEXT_BLOCK_ENTITY);
@@ -69,6 +71,7 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 		for (Tag line : lines) {
 			this.lines.add(Text.Serializer.fromJson(line.asString()));
 		}
+		this.renderDirty = true;
 	}
 
 	@Override
@@ -124,5 +127,13 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 
 	public enum ShadowType {
 		DROP, PLATE, NONE
+	}
+
+	@SuppressWarnings({"MethodCallSideOnly", "VariableUseSideOnly"})
+	@Override
+	public void markRemoved() {
+		if (world != null && world.isClient) {
+			BakedBlockEntityRenderer.VertexBufferManager.INSTANCE.invalidate(getPos());
+		}
 	}
 }
