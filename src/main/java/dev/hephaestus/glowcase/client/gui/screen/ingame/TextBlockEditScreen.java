@@ -2,7 +2,6 @@ package dev.hephaestus.glowcase.client.gui.screen.ingame;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.hephaestus.glowcase.Glowcase;
 import dev.hephaestus.glowcase.GlowcaseNetworking;
 import dev.hephaestus.glowcase.block.entity.TextBlockEntity;
 import io.netty.buffer.Unpooled;
@@ -57,17 +56,22 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 
 		this.selectionManager = new SelectionManager(
 				() -> this.textBlockEntity.lines.get(this.currentRow).getString(),
-				(string) -> textBlockEntity.lines.set(this.currentRow, new LiteralText(string)),
+				(string) -> {
+					textBlockEntity.lines.set(this.currentRow, new LiteralText(string));
+					this.textBlockEntity.renderDirty = true;
+				},
 				SelectionManager.makeClipboardGetter(this.client),
 				SelectionManager.makeClipboardSetter(this.client),
 				(string) -> true);
 
 		ButtonWidget decreaseSize = new ButtonWidget(80, 0, 20, 20, new LiteralText("-"), action -> {
 			this.textBlockEntity.scale -= (float) Math.max(0, 0.125);
+			this.textBlockEntity.renderDirty = true;
 		});
 
 		ButtonWidget increaseSize = new ButtonWidget(100, 0, 20, 20, new LiteralText("+"), action -> {
 			this.textBlockEntity.scale += 0.125;
+			this.textBlockEntity.renderDirty = true;
 		});
 
 		this.changeAlignment = new ButtonWidget(120 + innerPadding, 0, 160, 20, new TranslatableText("gui.glowcase.alignment", this.textBlockEntity.textAlignment), action -> {
@@ -76,6 +80,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 				case CENTER:    textBlockEntity.textAlignment = TextBlockEntity.TextAlignment.RIGHT;    break;
 				case RIGHT:     textBlockEntity.textAlignment = TextBlockEntity.TextAlignment.LEFT;     break;
 			}
+			this.textBlockEntity.renderDirty = true;
 
 			this.changeAlignment.setMessage(new TranslatableText("gui.glowcase.alignment", this.textBlockEntity.textAlignment));
 		});
@@ -86,6 +91,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 				case PLATE:     textBlockEntity.shadowType = TextBlockEntity.ShadowType.NONE;    break;
 				case NONE:      textBlockEntity.shadowType = TextBlockEntity.ShadowType.DROP;     break;
 			}
+			this.textBlockEntity.renderDirty = true;
 
 			this.shadowToggle.setMessage(new TranslatableText("gui.glowcase.shadow_type", this.textBlockEntity.shadowType));
 		});
@@ -95,6 +101,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 		this.colorEntryWidget.setChangedListener(string -> {
 			TextColor color = TextColor.parse(this.colorEntryWidget.getText());
 			this.textBlockEntity.color = color == null ? 0xFFFFFFFF : color.getRgb() | 0xFF000000;
+			this.textBlockEntity.renderDirty = true;
 		});
 
 		this.zOffsetToggle = new ButtonWidget(330 + innerPadding * 3, 0, 80, 20, new LiteralText(this.textBlockEntity.zOffset.name()), action -> {
@@ -103,6 +110,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 				case CENTER:   textBlockEntity.zOffset = TextBlockEntity.ZOffset.BACK;      break;
 				case BACK:     textBlockEntity.zOffset = TextBlockEntity.ZOffset.FRONT;     break;
 			}
+			this.textBlockEntity.renderDirty = true;
 
 			this.zOffsetToggle.setMessage(new LiteralText(this.textBlockEntity.zOffset.name()));
 		});
@@ -240,6 +248,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 				this.textBlockEntity.lines.set(this.currentRow, new LiteralText(
 						this.textBlockEntity.lines.get(this.currentRow).getString().substring(0, MathHelper.clamp(this.selectionManager.getSelectionStart(), 0, this.textBlockEntity.lines.get(this.currentRow).getString().length()))
 				));
+				this.textBlockEntity.renderDirty = true;
 				++this.currentRow;
 				this.selectionManager.moveCaretToEnd();
 				return true;
@@ -258,6 +267,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 						this.textBlockEntity.lines.get(this.currentRow).append(this.textBlockEntity.lines.get(this.currentRow + 1))
 				);
 				this.textBlockEntity.lines.remove(this.currentRow + 1);
+				this.textBlockEntity.renderDirty = true;
 				return true;
 			} else if (keyCode == GLFW.GLFW_KEY_DELETE && this.currentRow < this.textBlockEntity.lines.size() - 1 && this.selectionManager.getSelectionEnd() == this.textBlockEntity.lines.get(this.currentRow).getString().length()) {
 				this.textBlockEntity.lines.set(this.currentRow,
@@ -265,6 +275,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 				);
 
 				this.textBlockEntity.lines.remove(this.currentRow + 1);
+				this.textBlockEntity.renderDirty = true;
 				return true;
 			} else {
 				try {
