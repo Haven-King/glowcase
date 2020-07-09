@@ -1,8 +1,12 @@
 package dev.hephaestus.glowcase.client.render.block.entity;
 
+import dev.hephaestus.glowcase.Glowcase;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.ResourceReloadListenerKeys;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.*;
@@ -10,6 +14,9 @@ import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.ResourceType;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -93,7 +100,7 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> extends Bl
 	}
 
 	// TODO: lazy init?
-	public static class VertexBufferManager {
+	public static class VertexBufferManager implements SimpleSynchronousResourceReloadListener {
 		public static final VertexBufferManager INSTANCE = new VertexBufferManager();
 
 		// 2x2 chunks size for regions
@@ -108,6 +115,11 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> extends Bl
 		private final Map<RenderRegionPos, RegionBuilder> rebuilders = new Object2ObjectArrayMap<>();
 
 		private ClientWorld currWorld = null;
+
+		public VertexBufferManager() {
+			// Register self as a resource reload listener, to rebuild all when fonts are changed
+			ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(this);
+		}
 
 		private static class RegionBuffer {
 			private final Map<RenderLayer, VertexBuffer> layerBuffers = new Object2ObjectArrayMap<>();
@@ -301,6 +313,27 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> extends Bl
 			invalidRegions.clear();
 			rebuilders.clear();
 			currWorld = world;
+		}
+
+		@Override
+		public Identifier getFabricId() {
+			return new Identifier(Glowcase.MODID, "vertexbuffers");
+		}
+
+		@Override
+		public Collection<Identifier> getFabricDependencies() {
+			return Collections.singletonList(ResourceReloadListenerKeys.FONTS);
+		}
+
+		@Override
+		public void apply(ResourceManager manager) {
+			// Reset everything
+			for (RegionBuffer buf : cachedRegions.values()) {
+				buf.deallocate();
+			}
+			cachedRegions.clear();
+			invalidRegions.clear();
+			rebuilders.clear();
 		}
 	}
 }
