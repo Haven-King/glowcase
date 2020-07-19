@@ -1,12 +1,9 @@
 package dev.hephaestus.glowcase.client.render.block.entity;
 
-import dev.hephaestus.glowcase.Glowcase;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.ResourceReloadListenerKeys;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.fabric.api.client.rendering.v1.InvalidateRenderStateCallback;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.*;
@@ -14,9 +11,6 @@ import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.ResourceType;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -100,7 +94,7 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> extends Bl
 	}
 
 	// TODO: lazy init?
-	public static class VertexBufferManager implements SimpleSynchronousResourceReloadListener {
+	public static class VertexBufferManager {
 		public static final VertexBufferManager INSTANCE = new VertexBufferManager();
 
 		// 2x2 chunks size for regions
@@ -117,8 +111,8 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> extends Bl
 		private ClientWorld currWorld = null;
 
 		public VertexBufferManager() {
-			// Register self as a resource reload listener, to rebuild all when fonts are changed
-			ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(this);
+			// Register callback, to rebuild all when fonts/render chunks are changed
+			InvalidateRenderStateCallback.EVENT.register(this::reset);
 		}
 
 		private static class RegionBuffer {
@@ -304,36 +298,19 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> extends Bl
 			}
 		}
 
+		private void reset() {
+			// Reset everything
+			for (RegionBuffer buf : cachedRegions.values()) {
+				buf.deallocate();
+			}
+			cachedRegions.clear();
+			invalidRegions.clear();
+			rebuilders.clear();
+		}
+
 		public void setWorld(ClientWorld world) {
-			// Reset everything
-			for (RegionBuffer buf : cachedRegions.values()) {
-				buf.deallocate();
-			}
-			cachedRegions.clear();
-			invalidRegions.clear();
-			rebuilders.clear();
+			reset();
 			currWorld = world;
-		}
-
-		@Override
-		public Identifier getFabricId() {
-			return new Identifier(Glowcase.MODID, "vertexbuffers");
-		}
-
-		@Override
-		public Collection<Identifier> getFabricDependencies() {
-			return Collections.singletonList(ResourceReloadListenerKeys.FONTS);
-		}
-
-		@Override
-		public void apply(ResourceManager manager) {
-			// Reset everything
-			for (RegionBuffer buf : cachedRegions.values()) {
-				buf.deallocate();
-			}
-			cachedRegions.clear();
-			invalidRegions.clear();
-			rebuilders.clear();
 		}
 	}
 }
