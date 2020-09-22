@@ -3,6 +3,7 @@ package dev.hephaestus.glowcase.client.render.block.entity;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import net.fabricmc.fabric.api.client.rendering.v1.InvalidateRenderStateCallback;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.*;
@@ -108,6 +109,11 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> extends Bl
 		private final Map<RenderRegionPos, RegionBuilder> rebuilders = new Object2ObjectArrayMap<>();
 
 		private ClientWorld currWorld = null;
+
+		public VertexBufferManager() {
+			// Register callback, to rebuild all when fonts/render chunks are changed
+			InvalidateRenderStateCallback.EVENT.register(this::reset);
+		}
 
 		private static class RegionBuffer {
 			private final Map<RenderLayer, VertexBuffer> layerBuffers = new Object2ObjectArrayMap<>();
@@ -292,7 +298,7 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> extends Bl
 			}
 		}
 
-		public void setWorld(ClientWorld world) {
+		private void reset() {
 			// Reset everything
 			for (RegionBuffer buf : cachedRegions.values()) {
 				buf.deallocate();
@@ -300,6 +306,10 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> extends Bl
 			cachedRegions.clear();
 			invalidRegions.clear();
 			rebuilders.clear();
+		}
+
+		public void setWorld(ClientWorld world) {
+			reset();
 			currWorld = world;
 		}
 	}
