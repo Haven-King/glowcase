@@ -12,25 +12,10 @@ import net.minecraft.util.math.BlockPos;
 import java.util.regex.Pattern;
 
 public class HyperlinkBlockEntity extends BlockEntity implements BlockEntityClientSerializable {
-	private static final Pattern URL = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
 	public String url = "";
 
 	public HyperlinkBlockEntity(BlockPos pos, BlockState state) {
 		super(Glowcase.HYPERLINK_BLOCK_ENTITY, pos, state);
-	}
-
-	public static void save(PacketContext context, PacketByteBuf buf) {
-		BlockPos pos = buf.readBlockPos();
-		String url = buf.readString(32767);
-
-		context.getTaskQueue().execute(() -> {
-			BlockEntity blockEntity = context.getPlayer().getEntityWorld().getBlockEntity(pos);
-
-			if (blockEntity instanceof HyperlinkBlockEntity && URL.matcher(url).matches()) {
-				((HyperlinkBlockEntity) blockEntity).url = url;
-				((HyperlinkBlockEntity) blockEntity).sync();
-			}
-		});
 	}
 
 	@Override

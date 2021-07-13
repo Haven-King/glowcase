@@ -10,11 +10,15 @@
   "entrypoints": {
     "main": [
       "dev.hephaestus.glowcase.Glowcase",
-      "dev.hephaestus.glowcase.GlowcaseNetworking"
+      "dev.hephaestus.glowcase.networking.HyperlinkChannel",
+      "dev.hephaestus.glowcase.networking.ItemDisplayBlockChannel",
+      "dev.hephaestus.glowcase.networking.TextBlockChannel"
     ],
     "client": [
       "dev.hephaestus.glowcase.GlowcaseClient",
-      "dev.hephaestus.glowcase.GlowcaseNetworking"
+      "dev.hephaestus.glowcase.networking.ItemDisplayBlockChannel",
+      "dev.hephaestus.glowcase.networking.HyperlinkChannel",
+      "dev.hephaestus.glowcase.networking.TextBlockChannel"
     ]
   },
   "mixins": [

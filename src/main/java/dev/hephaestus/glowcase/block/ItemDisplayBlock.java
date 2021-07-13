@@ -1,11 +1,9 @@
 package dev.hephaestus.glowcase.block;
 
 import dev.hephaestus.glowcase.Glowcase;
-import dev.hephaestus.glowcase.GlowcaseNetworking;
 import dev.hephaestus.glowcase.block.entity.ItemDisplayBlockEntity;
 import dev.hephaestus.glowcase.item.GlowcaseItem;
-import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import dev.hephaestus.glowcase.networking.ItemDisplayBlockChannel;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
@@ -16,7 +14,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
@@ -67,14 +65,12 @@ public class ItemDisplayBlock extends GlowcaseBlock implements BlockEntityProvid
 					if (!((ItemDisplayBlockEntity) blockEntity).hasItem() && !handStack.isEmpty()) {
 						((ItemDisplayBlockEntity) blockEntity).setStack(handStack.copy());
 						return ActionResult.SUCCESS;
+					} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && ((ItemDisplayBlockEntity) blockEntity).getUseStack().isItemEqualIgnoreDamage(handStack)) {
+						ItemDisplayBlockChannel.openScreen((ServerPlayerEntity) player, pos);
+
+						return ActionResult.SUCCESS;
 					} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && handStack.getItem() instanceof GlowcaseItem) {
 						((ItemDisplayBlockEntity) blockEntity).setStack(ItemStack.EMPTY);
-						return ActionResult.SUCCESS;
-					} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && ((ItemDisplayBlockEntity) blockEntity).getUseStack().isItemEqualIgnoreDamage(handStack)) {
-						PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-						buf.writeBlockPos(pos);
-
-						ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, GlowcaseNetworking.OPEN_ITEM_DISPLAY_SCREEN, buf);
 						return ActionResult.SUCCESS;
 					}
 				}

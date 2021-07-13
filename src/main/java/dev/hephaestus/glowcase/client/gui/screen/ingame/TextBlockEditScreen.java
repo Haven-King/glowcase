@@ -2,26 +2,19 @@ package dev.hephaestus.glowcase.client.gui.screen.ingame;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.hephaestus.glowcase.GlowcaseNetworking;
 import dev.hephaestus.glowcase.block.entity.TextBlockEntity;
-import io.netty.buffer.Unpooled;
+import dev.hephaestus.glowcase.networking.TextBlockChannel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.SelectionManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.TextColor;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
@@ -127,7 +120,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 
 	@Override
 	public void onClose() {
-		this.save();
+		TextBlockChannel.save(this.textBlockEntity);
 		super.onClose();
 	}
 
@@ -140,15 +133,9 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 			matrices.translate(0, 40 + 2 * this.width / 100F, 0);
 			for (int i = 0; i < this.textBlockEntity.lines.size(); ++i) {
 				switch (this.textBlockEntity.textAlignment) {
-					case LEFT:
-						this.client.textRenderer.drawWithShadow(matrices, this.textBlockEntity.lines.get(i), this.width / 10F, i * 12, this.textBlockEntity.color);
-						break;
-					case CENTER:
-						this.client.textRenderer.drawWithShadow(matrices, this.textBlockEntity.lines.get(i), this.width / 2F - this.textRenderer.getWidth(this.textBlockEntity.lines.get(i)) / 2F, i * 12, this.textBlockEntity.color);
-						break;
-					case RIGHT:
-						this.client.textRenderer.drawWithShadow(matrices, this.textBlockEntity.lines.get(i), this.width - this.width / 10F - this.textRenderer.getWidth(this.textBlockEntity.lines.get(i)), i * 12, this.textBlockEntity.color);
-						break;
+					case LEFT -> this.client.textRenderer.drawWithShadow(matrices, this.textBlockEntity.lines.get(i), this.width / 10F, i * 12, this.textBlockEntity.color);
+					case CENTER -> this.client.textRenderer.drawWithShadow(matrices, this.textBlockEntity.lines.get(i), this.width / 2F - this.textRenderer.getWidth(this.textBlockEntity.lines.get(i)) / 2F, i * 12, this.textBlockEntity.color);
+					case RIGHT -> this.client.textRenderer.drawWithShadow(matrices, this.textBlockEntity.lines.get(i), this.width - this.width / 10F - this.textRenderer.getWidth(this.textBlockEntity.lines.get(i)), i * 12, this.textBlockEntity.color);
 				}
 			}
 
@@ -163,20 +150,11 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 				String preSelection = line.substring(0, MathHelper.clamp(line.length(), 0, selectionStart));
 				int startX = this.client.textRenderer.getWidth(preSelection);
 
-				float push;
-				switch (this.textBlockEntity.textAlignment) {
-					case LEFT:
-						push = this.width / 10F;
-						break;
-					case CENTER:
-						push = this.width / 2F - this.textRenderer.getWidth(line) / 2F;
-						break;
-					case RIGHT:
-						push = this.width - this.width / 10F - this.textRenderer.getWidth(line);
-						break;
-					default:
-						push = 0;
-				}
+				float push = switch (this.textBlockEntity.textAlignment) {
+					case LEFT -> this.width / 10F;
+					case CENTER -> this.width / 2F - this.textRenderer.getWidth(line) / 2F;
+					case RIGHT -> this.width - this.width / 10F - this.textRenderer.getWidth(line);
+				};
 
 				startX += push;
 
@@ -296,34 +274,5 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 		} else {
 			return super.mouseClicked(mouseX, mouseY, button);
 		}
-	}
-
-	private void save() {
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		buf.writeBlockPos(this.textBlockEntity.getPos());
-		buf.writeFloat(this.textBlockEntity.scale);
-		buf.writeVarInt(this.textBlockEntity.lines.size());
-		buf.writeEnumConstant(this.textBlockEntity.textAlignment);
-		buf.writeVarInt(this.textBlockEntity.color);
-		buf.writeEnumConstant(this.textBlockEntity.zOffset);
-		buf.writeEnumConstant(this.textBlockEntity.shadowType);
-
-		for (MutableText text : this.textBlockEntity.lines) {
-			buf.writeText(text);
-		}
-
-		ClientSidePacketRegistry.INSTANCE.sendToServer(GlowcaseNetworking.SAVE_TEXT_BLOCK, buf);
-	}
-
-	public static void open(PacketContext context, PacketByteBuf buf) {
-		BlockPos pos = buf.readBlockPos();
-
-		context.getTaskQueue().execute(() -> {
-			BlockEntity blockEntity = context.getPlayer().getEntityWorld().getBlockEntity(pos);
-
-			if (blockEntity instanceof TextBlockEntity) {
-				MinecraftClient.getInstance().openScreen(new TextBlockEditScreen((TextBlockEntity) blockEntity));
-			}
-		});
 	}
 }

@@ -107,33 +107,6 @@ public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityCl
 		return this.stack;
 	}
 
-	public static void save(PacketContext context, PacketByteBuf packetByteBuf) {
-		BlockPos pos = packetByteBuf.readBlockPos();
-		RotationType rotationType = packetByteBuf.readEnumConstant(RotationType.class);
-		boolean givesItem = packetByteBuf.readBoolean();
-		int rotation = packetByteBuf.readVarInt();
-		boolean showName = packetByteBuf.readBoolean();
-
-		float pitch = packetByteBuf.readFloat();
-		float yaw = packetByteBuf.readFloat();
-
-		context.getTaskQueue().execute(() -> {
-			BlockEntity blockEntity = context.getPlayer().getEntityWorld().getBlockEntity(pos);
-			if (blockEntity instanceof ItemDisplayBlockEntity) {
-				((ItemDisplayBlockEntity) blockEntity).givesItem = givesItem;
-				((ItemDisplayBlockEntity) blockEntity).rotationType = rotationType;
-				((ItemDisplayBlockEntity) blockEntity).pitch = pitch;
-				((ItemDisplayBlockEntity) blockEntity).yaw = yaw;
-				((ItemDisplayBlockEntity) blockEntity).showName = showName;
-
-				World world = context.getPlayer().getEntityWorld();
-				world.setBlockState(pos, world.getBlockState(pos).with(Properties.ROTATION, rotation));
-
-				((ItemDisplayBlockEntity) blockEntity).sync();
-			}
-		});
-	}
-
 	public void cycleRotationType(PlayerEntity playerEntity) {
 		switch (this.rotationType) {
 			case TRACKING -> {

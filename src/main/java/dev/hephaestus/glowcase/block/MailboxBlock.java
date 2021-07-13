@@ -34,16 +34,11 @@ public class MailboxBlock extends Block {
 
 	@Override
 	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-		switch (state.get(Properties.HORIZONTAL_FACING)) {
-			case NORTH:
-			case SOUTH:
-				return SHAPE_NS;
-			case EAST:
-			case WEST:
-				return SHAPE_EW;
-			default:
-				return VoxelShapes.fullCube();
-		}
+		return switch (state.get(Properties.HORIZONTAL_FACING)) {
+			case NORTH, SOUTH -> SHAPE_NS;
+			case EAST, WEST -> SHAPE_EW;
+			default -> VoxelShapes.fullCube();
+		};
 	}
 
 	@Override

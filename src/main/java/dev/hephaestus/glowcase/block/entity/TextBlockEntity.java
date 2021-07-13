@@ -85,39 +85,6 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 		return this.writeNbt(NbtCompound);
 	}
 
-	public static void save(PacketContext context, PacketByteBuf buf) {
-		BlockPos pos = buf.readBlockPos();
-		float scale = buf.readFloat();
-		int lineCount = buf.readVarInt();
-		TextAlignment alignment = buf.readEnumConstant(TextAlignment.class);
-		int color = buf.readVarInt();
-		ZOffset zOffset = buf.readEnumConstant(ZOffset.class);
-		ShadowType shadowType = buf.readEnumConstant(ShadowType.class);
-
-		List<MutableText> lines = new ArrayList<>();
-		for (int i = 0; i < lineCount; ++i) {
-			lines.add((MutableText) buf.readText());
-		}
-
-		context.getTaskQueue().execute(() -> {
-			BlockEntity blockEntity = context.getPlayer().getEntityWorld().getBlockEntity(pos);
-			if (blockEntity instanceof TextBlockEntity) {
-				((TextBlockEntity) blockEntity).scale = scale;
-				((TextBlockEntity) blockEntity).lines = lines;
-				((TextBlockEntity) blockEntity).textAlignment = alignment;
-				((TextBlockEntity) blockEntity).color = color;
-				((TextBlockEntity) blockEntity).zOffset = zOffset;
-				((TextBlockEntity) blockEntity).shadowType = shadowType;
-				((TextBlockEntity) blockEntity).sync();
-			}
-		});
-	}
-
-//	@Override
-//	public double getSquaredRenderDistance() {
-//		return MathHelper.clamp(this.scale * 12D, 40D, 400D);
-//	}
-
 	public enum TextAlignment {
 		LEFT, CENTER, RIGHT
 	}

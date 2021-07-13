@@ -1,9 +1,7 @@
 package dev.hephaestus.glowcase.block;
 
-import dev.hephaestus.glowcase.GlowcaseNetworking;
 import dev.hephaestus.glowcase.block.entity.TextBlockEntity;
-import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import dev.hephaestus.glowcase.networking.TextBlockChannel;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
@@ -12,7 +10,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
@@ -44,11 +41,8 @@ public class TextBlock extends GlowcaseBlock implements BlockEntityProvider {
 	@Override
 	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
 		if (!world.isClient) {
-			if (placer instanceof ServerPlayerEntity && ((ServerPlayerEntity) placer).isCreative() && world.canPlayerModifyAt(((ServerPlayerEntity) placer), pos)) {
-				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-				buf.writeBlockPos(pos);
-
-				ServerSidePacketRegistry.INSTANCE.sendToPlayer(((ServerPlayerEntity) placer), GlowcaseNetworking.OPEN_TEXT_BLOCK_SCREEN, buf);
+			if (placer instanceof ServerPlayerEntity player && player.isCreative() && world.canPlayerModifyAt(player, pos)) {
+				TextBlockChannel.openScreen(player, pos);
 			}
 		}
 	}

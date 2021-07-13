@@ -1,11 +1,8 @@
 package dev.hephaestus.glowcase.block;
 
-import dev.hephaestus.glowcase.Glowcase;
-import dev.hephaestus.glowcase.GlowcaseNetworking;
 import dev.hephaestus.glowcase.block.entity.HyperlinkBlockEntity;
 import dev.hephaestus.glowcase.item.GlowcaseItem;
-import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import dev.hephaestus.glowcase.networking.HyperlinkChannel;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -13,7 +10,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -36,11 +32,8 @@ public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider
 	@Override
 	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
 		if (!world.isClient) {
-			if ((placer instanceof ServerPlayerEntity) && ((ServerPlayerEntity) placer).isCreative() && world.canPlayerModifyAt((PlayerEntity) placer, pos)) {
-				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-				buf.writeBlockPos(pos);
-
-				ServerSidePacketRegistry.INSTANCE.sendToPlayer((PlayerEntity) placer, GlowcaseNetworking.OPEN_HYPERLINK_SCREEN, buf);
+			if (placer instanceof ServerPlayerEntity player && player.isCreative() && world.canPlayerModifyAt(player, pos)) {
+				HyperlinkChannel.openScreen(player, pos);
 			}
 		}
 	}
@@ -53,14 +46,10 @@ public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider
 			this.onPlaced(world, pos, state, player, null);
 			return ActionResult.SUCCESS;
 		} else {
-			BlockEntity blockEntity = world.getBlockEntity(pos);
-			if (blockEntity instanceof HyperlinkBlockEntity) {
-				String url = ((HyperlinkBlockEntity) blockEntity).url;
+			if (world.getBlockEntity(pos) instanceof HyperlinkBlockEntity be) {
+				String url = be.url;
 
-				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-				buf.writeString(url);
-
-				ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, GlowcaseNetworking.OPEN_HYPERLINK_CONFIRMATION, buf);
+				HyperlinkChannel.confirm((ServerPlayerEntity) player, url);
 
 				return ActionResult.SUCCESS;
 			} else {
