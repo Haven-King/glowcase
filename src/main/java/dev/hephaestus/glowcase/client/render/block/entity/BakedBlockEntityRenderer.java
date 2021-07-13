@@ -1,10 +1,12 @@
 package dev.hephaestus.glowcase.client.render.block.entity;
 
+import com.google.common.collect.Sets;
+import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.fabricmc.fabric.api.client.rendering.v1.InvalidateRenderStateCallback;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
@@ -13,8 +15,10 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -108,7 +112,7 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> implements
 
 		private final Map<RenderRegionPos, RegionBuffer> cachedRegions = new HashMap<>();
 
-		private final ObjectSet<RenderRegionPos> invalidRegions = new ObjectArraySet<>();
+		private final Set<RenderRegionPos> invalidRegions = Sets.newHashSet();
 		private final Map<RenderRegionPos, RegionBuilder> rebuilders = new Object2ObjectArrayMap<>();
 
 		private ClientWorld currWorld = null;
@@ -130,17 +134,15 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> implements
 				return layerBuffers.containsKey(rl);
 			}
 
-			public void render(RenderLayer rl, MatrixStack matrices) {
+			public void render(RenderLayer rl, MatrixStack matrices, Matrix4f projectionMatrix) {
 				VertexBuffer buf = layerBuffers.get(rl);
-				buf.bind();
-				rl.getVertexFormat().startDrawing(0L);
-				buf.draw(matrices.peek().getModel(), rl.getDrawMode());
+				// (yarn name is misleading - setShader actually calls draw)
+				buf.setShader(matrices.peek().getModel(), projectionMatrix, RenderSystem.getShader());
 			}
 
 			public void rebuild(RenderLayer rl, BufferBuilder newBuf) {
-				VertexBuffer buf = layerBuffers.computeIfAbsent(rl, renderLayer -> new VertexBuffer(rl.getVertexFormat()));
-				// TODO: check translucency of RenderLayer first?
-				newBuf.sortQuads(0, 0, 0);
+				VertexBuffer buf = layerBuffers.computeIfAbsent(rl, renderLayer -> new VertexBuffer());
+				// TODO: translucency sorting?
 				newBuf.end();
 				buf.upload(newBuf);
 			}
@@ -169,9 +171,10 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> implements
 
 		private static class RegionBuilder implements VertexConsumerProvider, Iterable<Map.Entry<RenderLayer, BufferBuilder>> {
 			private final Map<RenderLayer, BufferBuilder> bufs = new Object2ObjectArrayMap<>();
+			private final BlockEntityRenderDispatcher renderDispatcher = MinecraftClient.getInstance().getBlockEntityRenderDispatcher();
 
 			private <E extends BlockEntity> void render(E blockEntity) {
-				BlockEntityRenderer<E> ber = BlockEntityRenderDispatcher.INSTANCE.get(blockEntity);
+				BlockEntityRenderer<E> ber = renderDispatcher.get(blockEntity);
 				if (ber instanceof BakedBlockEntityRenderer) {
 					MatrixStack bakeStack = new MatrixStack();
 					BlockPos pos = blockEntity.getPos();
@@ -202,7 +205,7 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> implements
 				});
 			}
 
-			public Iterator<Map.Entry<RenderLayer, BufferBuilder>> iterator() {
+			public @NotNull Iterator<Map.Entry<RenderLayer, BufferBuilder>> iterator() {
 				return bufs.entrySet().iterator();
 			}
 		}
@@ -219,7 +222,7 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> implements
 			return Math.abs(rrp.x - center.x) <= VIEW_RADIUS && Math.abs(rrp.z - center.z) <= VIEW_RADIUS;
 		}
 
-		public void render(MatrixStack matrices, Camera camera) {
+		public void render(MatrixStack matrices, Matrix4f projectionMatrix, Camera camera) {
 			Vec3d vec3d = camera.getPos();
 			double camX = vec3d.getX();
 			double camY = vec3d.getY();
@@ -284,12 +287,10 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> implements
 						BlockPos origin = cb.origin;
 						matrices.push();
 						matrices.translate(origin.getX() - camX, origin.getY() - camY, origin.getZ() - camZ);
-						cb.render(layer, matrices);
+						cb.render(layer, matrices, projectionMatrix);
 						matrices.pop();
 					}
 				}
-				VertexBuffer.unbind();
-				layer.getVertexFormat().endDrawing();
 				layer.endDrawing();
 			}
 		}

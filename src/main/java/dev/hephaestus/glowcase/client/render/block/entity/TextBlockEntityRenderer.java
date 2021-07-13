@@ -1,10 +1,9 @@
 package dev.hephaestus.glowcase.client.render.block.entity;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.hephaestus.glowcase.block.entity.TextBlockEntity;
+import dev.hephaestus.glowcase.mixin.client.render.ber.RenderPhaseAccessor;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.state.property.Properties;
@@ -50,14 +49,12 @@ public class TextBlockEntityRenderer extends BakedBlockEntityRenderer<TextBlockE
 
 		matrices.translate(0,  -((blockEntity.lines.size() - 0.25) * 12) / 2D, 0D);
 		for (int i = 0; i < blockEntity.lines.size(); ++i) {
-			double dX = 0;
-
 			double width = textRenderer.getWidth(blockEntity.lines.get(i));
-			switch (blockEntity.textAlignment) {
-				case LEFT:      dX = -maxLength / 2D;                           break;
-				case CENTER:    dX = (maxLength - width) / 2D - maxLength / 2D; break;
-				case RIGHT:     dX = maxLength - width - maxLength / 2D;        break;
-			}
+			double dX = switch (blockEntity.textAlignment) {
+				case LEFT -> -maxLength / 2D;
+				case CENTER -> (maxLength - width) / 2D - maxLength / 2D;
+				case RIGHT -> maxLength - width - maxLength / 2D;
+			};
 
 			matrices.push();
 			matrices.translate(dX, 0, 0);
@@ -87,13 +84,10 @@ public class TextBlockEntityRenderer extends BakedBlockEntityRenderer<TextBlockE
 	// Use a custom render layer to render the text plate - mimics DrawableHelper's RenderSystem calls
 	// TODO: This causes issues with transparency - not sure if these can be fixed?
 	private final RenderLayer plateRenderLayer = RenderLayer.of("glowcase_text_plate", VertexFormats.POSITION_COLOR,
-		7, 256, true, true, RenderLayer.MultiPhaseParameters.builder()
-			// Use no texture
-			.texture(new RenderPhase.Texture())
-			.transparency(new RenderPhase.Transparency("glowcase_defaultblendfunc", () -> {
-				RenderSystem.enableBlend();
-				RenderSystem.defaultBlendFunc();
-			}, RenderSystem::disableBlend))
+		VertexFormat.DrawMode.QUADS, 256, true, true, RenderLayer.MultiPhaseParameters.builder()
+			.texture(RenderPhaseAccessor.getNO_TEXTURE())
+			.transparency(RenderPhaseAccessor.getTRANSLUCENT_TRANSPARENCY())
+			.shader(RenderPhaseAccessor.getCOLOR_SHADER())
 			.build(false));
 
 	@SuppressWarnings("SameParameterValue")

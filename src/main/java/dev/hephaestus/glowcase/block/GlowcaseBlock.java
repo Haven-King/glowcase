@@ -25,7 +25,7 @@ public class GlowcaseBlock extends Block {
 
 	@Override
 	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-		if (((EntityShapeContextAccessor) context).heldItem() instanceof GlowcaseItem && context != ShapeContext.absent()) {
+		if (((EntityShapeContextAccessor) context).heldItem().getItem() instanceof GlowcaseItem && context != ShapeContext.absent()) {
 			return VoxelShapes.fullCube();
 		} else {
 			return PSEUDO_EMPTY;
