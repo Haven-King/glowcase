@@ -2,7 +2,6 @@ package dev.hephaestus.glowcase.block;
 
 import dev.hephaestus.glowcase.Glowcase;
 import dev.hephaestus.glowcase.block.entity.ItemDisplayBlockEntity;
-import dev.hephaestus.glowcase.item.GlowcaseItem;
 import dev.hephaestus.glowcase.networking.ItemDisplayBlockChannel;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
@@ -69,7 +68,7 @@ public class ItemDisplayBlock extends GlowcaseBlock implements BlockEntityProvid
 						ItemDisplayBlockChannel.openScreen((ServerPlayerEntity) player, pos);
 
 						return ActionResult.SUCCESS;
-					} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && handStack.getItem() instanceof GlowcaseItem) {
+					} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && handStack.isIn(Glowcase.ITEM_TAG)) {
 						((ItemDisplayBlockEntity) blockEntity).setStack(ItemStack.EMPTY);
 						return ActionResult.SUCCESS;
 					}

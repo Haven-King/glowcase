@@ -1,7 +1,7 @@
 package dev.hephaestus.glowcase.block;
 
+import dev.hephaestus.glowcase.Glowcase;
 import dev.hephaestus.glowcase.block.entity.HyperlinkBlockEntity;
-import dev.hephaestus.glowcase.item.GlowcaseItem;
 import dev.hephaestus.glowcase.networking.HyperlinkChannel;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
@@ -42,7 +42,7 @@ public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider
 	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		if (world.isClient) {
 			return ActionResult.SUCCESS;
-		} else if (player.getStackInHand(hand).getItem() instanceof GlowcaseItem) {
+		} else if (player.getStackInHand(hand).isIn(Glowcase.ITEM_TAG)) {
 			this.onPlaced(world, pos, state, player, null);
 			return ActionResult.SUCCESS;
 		} else {
