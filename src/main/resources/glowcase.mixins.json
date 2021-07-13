@@ -6,6 +6,7 @@
     "block.EntityShapeContextAccessor"
   ],
   "client": [
+    "client.render.ber.RenderPhaseAccessor",
     "client.render.ber.WorldRendererMixin",
     "client.render.entity.EntityRenderDispatcherAccessor"
   ],
