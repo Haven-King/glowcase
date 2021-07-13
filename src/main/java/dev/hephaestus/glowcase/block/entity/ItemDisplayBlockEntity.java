@@ -93,7 +93,7 @@ public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityCl
 
 	private void setDisplayEntity() {
 		if (this.stack.getItem() instanceof SpawnEggItem) {
-			this.displayEntity = ((SpawnEggItem) this.stack.getItem()).getEntityType(this.stack.getTag()).create(this.world);
+			this.displayEntity = ((SpawnEggItem) this.stack.getItem()).getEntityType(this.stack.getNbt()).create(this.world);
 		} else {
 			this.displayEntity = null;
 		}

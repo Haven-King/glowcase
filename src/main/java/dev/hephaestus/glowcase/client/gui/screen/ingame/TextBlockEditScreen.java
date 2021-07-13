@@ -257,7 +257,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 					return this.selectionManager.handleSpecialKey(keyCode) || super.keyPressed(keyCode, scanCode, modifiers);
 				} catch (StringIndexOutOfBoundsException e) {
 					e.printStackTrace();
-					MinecraftClient.getInstance().openScreen(null);
+					MinecraftClient.getInstance().setScreen(null);
 					return false;
 				}
 			}

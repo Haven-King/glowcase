@@ -94,7 +94,7 @@ public class HyperlinkChannel implements ModInitializer, ClientModInitializer {
         @Override
         public void run() {
             if (this.client.world != null && this.client.world.getBlockEntity(this.pos) instanceof HyperlinkBlockEntity be) {
-                MinecraftClient.getInstance().openScreen(new HyperlinkBlockEditScreen(be));
+                MinecraftClient.getInstance().setScreen(new HyperlinkBlockEditScreen(be));
             }
         }
     }
@@ -103,7 +103,7 @@ public class HyperlinkChannel implements ModInitializer, ClientModInitializer {
     private record UrlOpener(MinecraftClient client, String url) implements Runnable, BooleanConsumer {
         @Override
         public void run() {
-            this.client.openScreen(new ConfirmChatLinkScreen(this, url, false));
+            this.client.setScreen(new ConfirmChatLinkScreen(this, url, false));
         }
 
 
@@ -113,7 +113,7 @@ public class HyperlinkChannel implements ModInitializer, ClientModInitializer {
                 Util.getOperatingSystem().open(url);
             }
 
-            this.client.openScreen(null);
+            this.client.setScreen(null);
         }
     }
 }

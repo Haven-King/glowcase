@@ -108,7 +108,7 @@ public class TextBlockChannel implements ModInitializer, ClientModInitializer {
         @Override
         public void run() {
             if (this.client.world != null && this.client.world.getBlockEntity(pos) instanceof TextBlockEntity be) {
-                MinecraftClient.getInstance().openScreen(new TextBlockEditScreen(be));
+                MinecraftClient.getInstance().setScreen(new TextBlockEditScreen(be));
             }
         }
     }

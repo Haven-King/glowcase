@@ -108,7 +108,7 @@ public class ItemDisplayBlockChannel implements ModInitializer, ClientModInitial
         @Override
         public void run() {
             if (this.client.world != null && client.world.getBlockEntity(this.pos) instanceof ItemDisplayBlockEntity be) {
-                this.client.openScreen(new ItemDisplayBlockEditScreen(be));
+                this.client.setScreen(new ItemDisplayBlockEditScreen(be));
             }
         }
     }
