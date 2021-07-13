@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 
@@ -15,8 +15,8 @@ public class HyperlinkBlockEntity extends BlockEntity implements BlockEntityClie
 	private static final Pattern URL = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
 	public String url = "";
 
-	public HyperlinkBlockEntity() {
-		super(Glowcase.HYPERLINK_BLOCK_ENTITY);
+	public HyperlinkBlockEntity(BlockPos pos, BlockState state) {
+		super(Glowcase.HYPERLINK_BLOCK_ENTITY, pos, state);
 	}
 
 	public static void save(PacketContext context, PacketByteBuf buf) {
@@ -34,8 +34,8 @@ public class HyperlinkBlockEntity extends BlockEntity implements BlockEntityClie
 	}
 
 	@Override
-	public CompoundTag toTag(CompoundTag tag) {
-		super.toTag(tag);
+	public NbtCompound writeNbt(NbtCompound tag) {
+		super.writeNbt(tag);
 
 		tag.putString("url", this.url);
 
@@ -43,19 +43,19 @@ public class HyperlinkBlockEntity extends BlockEntity implements BlockEntityClie
 	}
 
 	@Override
-	public void fromTag(BlockState state, CompoundTag tag) {
-		super.fromTag(state, tag);
+	public void readNbt(NbtCompound tag) {
+		super.readNbt(tag);
 
 		this.url = tag.getString("url");
 	}
 
 	@Override
-	public void fromClientTag(CompoundTag compoundTag) {
-		this.fromTag(Glowcase.HYPERLINK_BLOCK.getDefaultState(), compoundTag);
+	public void fromClientTag(NbtCompound NbtCompound) {
+		this.readNbt(NbtCompound);
 	}
 
 	@Override
-	public CompoundTag toClientTag(CompoundTag compoundTag) {
-		return this.toTag(compoundTag);
+	public NbtCompound toClientTag(NbtCompound NbtCompound) {
+		return this.writeNbt(NbtCompound);
 	}
 }

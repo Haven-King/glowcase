@@ -11,16 +11,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SpawnEggItem;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.Tickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.world.World;
 
-public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityClientSerializable, Tickable {
+public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityClientSerializable {
 	private ItemStack stack = ItemStack.EMPTY;
 	private Entity displayEntity = null;
 
@@ -30,15 +29,15 @@ public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityCl
 	public float pitch;
 	public float yaw;
 
-	public ItemDisplayBlockEntity() {
-		super(Glowcase.ITEM_DISPLAY_BLOCK_ENTITY);
+	public ItemDisplayBlockEntity(BlockPos pos, BlockState state) {
+		super(Glowcase.ITEM_DISPLAY_BLOCK_ENTITY, pos, state);
 	}
 
 	@Override
-	public void fromTag(BlockState state, CompoundTag tag) {
-		super.fromTag(state, tag);
+	public void readNbt(NbtCompound tag) {
+		super.readNbt(tag);
 
-		this.stack = ItemStack.fromTag(tag.getCompound("item"));
+		this.stack = ItemStack.fromNbt(tag.getCompound("item"));
 
 		if (tag.contains("tracking")) {
 			this.rotationType = tag.getBoolean("tracking") ? RotationType.TRACKING : RotationType.LOCKED;
@@ -59,25 +58,25 @@ public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityCl
 	}
 
 	@Override
-	public CompoundTag toTag(CompoundTag tag) {
-		tag.put("item", this.stack.toTag(new CompoundTag()));
+	public NbtCompound writeNbt(NbtCompound tag) {
+		tag.put("item", this.stack.writeNbt(new NbtCompound()));
 		tag.putString("rotation_type", this.rotationType.name());
 		tag.putFloat("pitch", this.pitch);
 		tag.putFloat("yaw", this.yaw);
 		tag.putBoolean("show_name", this.showName);
 
-		return super.toTag(tag);
+		return super.writeNbt(tag);
 	}
 
 	@Override
-	public void fromClientTag(CompoundTag compoundTag) {
-		this.fromTag(null, compoundTag);
+	public void fromClientTag(NbtCompound NbtCompound) {
+		this.readNbt(NbtCompound);
 		this.setDisplayEntity();
 	}
 
 	@Override
-	public CompoundTag toClientTag(CompoundTag compoundTag) {
-		return this.toTag(compoundTag);
+	public NbtCompound toClientTag(NbtCompound NbtCompound) {
+		return this.writeNbt(NbtCompound);
 	}
 
 	public boolean hasItem() {
@@ -106,14 +105,6 @@ public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityCl
 
 	public ItemStack getUseStack() {
 		return this.stack;
-	}
-
-	@Override
-	public void tick() {
-		if (this.displayEntity != null) {
-			this.displayEntity.tick();
-			++displayEntity.age;
-		}
 	}
 
 	public static void save(PacketContext context, PacketByteBuf packetByteBuf) {
@@ -145,17 +136,14 @@ public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityCl
 
 	public void cycleRotationType(PlayerEntity playerEntity) {
 		switch (this.rotationType) {
-			case TRACKING:
+			case TRACKING -> {
 				this.rotationType = RotationType.HORIZONTAL;
 				if (this.world != null) {
-					this.world.setBlockState(this.pos, this.getCachedState().with(Properties.ROTATION, MathHelper.floor((double) ((playerEntity.yaw) * 16.0F / 360.0F) + 0.5D) & 15));
+					this.world.setBlockState(this.pos, this.getCachedState().with(Properties.ROTATION, MathHelper.floor((double) ((playerEntity.getYaw()) * 16.0F / 360.0F) + 0.5D) & 15));
 				}
-				break;
-			case HORIZONTAL:
-				this.rotationType = RotationType.LOCKED;
-				break;
-			case LOCKED:
-				this.rotationType = RotationType.TRACKING;
+			}
+			case HORIZONTAL -> this.rotationType = RotationType.LOCKED;
+			case LOCKED -> this.rotationType = RotationType.TRACKING;
 		}
 	}
 
@@ -164,12 +152,19 @@ public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityCl
 		double d = pos.getX() - player.getPos().x + 0.5;
 		double e = pos.getY() - player.getEyeY() + 0.5;
 		double f = pos.getZ() - player.getPos().z + 0.5;
-		double g = MathHelper.sqrt(d * d + f * f);
+		double g = MathHelper.sqrt((float) (d * d + f * f));
 
 		float pitch = (float) ((-MathHelper.atan2(e, g)));
 		float yaw = (float) (-MathHelper.atan2(f, d) + Math.PI / 2);
 
 		return new Vec2f(pitch, yaw);
+	}
+
+	public static void tick(World world, BlockPos blockPos, BlockState state, ItemDisplayBlockEntity blockEntity) {
+		if (blockEntity.displayEntity != null) {
+			blockEntity.displayEntity.tick();
+			++blockEntity.displayEntity.age;
+		}
 	}
 
 	public enum RotationType {

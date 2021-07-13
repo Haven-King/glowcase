@@ -21,8 +21,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 public class TextBlock extends GlowcaseBlock implements BlockEntityProvider {
 	public TextBlock() {
@@ -39,11 +39,6 @@ public class TextBlock extends GlowcaseBlock implements BlockEntityProvider {
 	@Override
 	public BlockState getPlacementState(ItemPlacementContext ctx) {
 		return this.getDefaultState().with(Properties.ROTATION, MathHelper.floor((double)((180.0F + ctx.getPlayerYaw()) * 16.0F / 360.0F) + 0.5D) & 15);
-	}
-
-	@Override
-	public BlockEntity createBlockEntity(BlockView view) {
-		return new TextBlockEntity();
 	}
 
 	@Override
@@ -65,5 +60,11 @@ public class TextBlock extends GlowcaseBlock implements BlockEntityProvider {
 		}
 
 		return ActionResult.SUCCESS;
+	}
+
+	@Nullable
+	@Override
+	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+		return new TextBlockEntity(pos, state);
 	}
 }

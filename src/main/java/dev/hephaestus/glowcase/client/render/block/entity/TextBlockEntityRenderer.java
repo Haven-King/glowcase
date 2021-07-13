@@ -5,14 +5,15 @@ import dev.hephaestus.glowcase.block.entity.TextBlockEntity;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec3f;
 
 public class TextBlockEntityRenderer extends BakedBlockEntityRenderer<TextBlockEntity> {
-	public TextBlockEntityRenderer(BlockEntityRenderDispatcher dispatcher) {
-		super(dispatcher);
+	public TextBlockEntityRenderer(BlockEntityRendererFactory.Context context) {
+		super(context);
 	}
 
 	@Override
@@ -29,16 +30,16 @@ public class TextBlockEntityRenderer extends BakedBlockEntityRenderer<TextBlockE
 		matrices.translate(0.5D, 0.5D, 0.5D);
 
 		float rotation = -(blockEntity.getCachedState().get(Properties.ROTATION) * 360) / 16.0F;
-		matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(rotation));
+		matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(rotation));
 
 		switch (blockEntity.zOffset) {
-			case FRONT: matrices.translate(0D, 0D, 0.4D); break;
-			case BACK: matrices.translate(0D, 0D, -0.4D); break;
+			case FRONT -> matrices.translate(0D, 0D, 0.4D);
+			case BACK -> matrices.translate(0D, 0D, -0.4D);
 		}
 
 		float scale = 0.010416667F * blockEntity.scale;
 		matrices.scale(scale, -scale, scale);
-		TextRenderer textRenderer = dispatcher.getTextRenderer();
+		TextRenderer textRenderer = this.context.getTextRenderer();
 
 		double maxLength = 0;
 		double minLength = Double.MAX_VALUE;

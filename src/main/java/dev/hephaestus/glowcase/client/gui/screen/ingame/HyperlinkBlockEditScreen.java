@@ -46,9 +46,8 @@ public class HyperlinkBlockEditScreen extends GlowcaseScreen {
 	}
 
 	@Override
-	public void init(MinecraftClient client, int width, int height) {
-		this.client = client;
-		this.client.keyboard.enableRepeatEvents(true);
+	public void init() {
+		this.client.keyboard.setRepeatEvents(true);
 
 		this.urlEntryWidget = new TextFieldWidget(this.client.textRenderer, width / 10, height / 2 - 10, 8 * width / 10, 20, LiteralText.EMPTY);
 		this.urlEntryWidget.setText(this.hyperlinkBlockEntity.url);
@@ -56,7 +55,7 @@ public class HyperlinkBlockEditScreen extends GlowcaseScreen {
 
 		this.urlEntryWidget.setMaxLength(Integer.MAX_VALUE);
 
-		this.children.add(this.urlEntryWidget);
+		this.addDrawableChild(this.urlEntryWidget);
 	}
 
 	@Override

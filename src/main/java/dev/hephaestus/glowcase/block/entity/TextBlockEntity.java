@@ -6,16 +6,15 @@ import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +28,14 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 	public int color = 0xFFFFFF;
 	public boolean renderDirty = true;
 
-	public TextBlockEntity() {
-		super(Glowcase.TEXT_BLOCK_ENTITY);
+	public TextBlockEntity(BlockPos pos, BlockState state) {
+		super(Glowcase.TEXT_BLOCK_ENTITY, pos, state);
 		lines.add((MutableText) LiteralText.EMPTY);
 	}
 
 	@Override
-	public CompoundTag toTag(CompoundTag tag) {
-		super.toTag(tag);
+	public NbtCompound writeNbt(NbtCompound tag) {
+		super.writeNbt(tag);
 
 		tag.putFloat("scale", this.scale);
 		tag.putInt("color", this.color);
@@ -45,9 +44,9 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 		tag.putString("z_offset", this.zOffset.name());
 		tag.putString("shadow_type", this.shadowType.name());
 
-		ListTag lines = tag.getList("lines", 8);
+		NbtList lines = tag.getList("lines", 8);
 		for (MutableText text : this.lines) {
-			lines.add(StringTag.of(Text.Serializer.toJson(text)));
+			lines.add(NbtString.of(Text.Serializer.toJson(text)));
 		}
 
 		tag.put("lines", lines);
@@ -56,8 +55,8 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 	}
 
 	@Override
-	public void fromTag(BlockState state, CompoundTag tag) {
-		super.fromTag(state, tag);
+	public void readNbt(NbtCompound tag) {
+		super.readNbt(tag);
 
 		this.lines = new ArrayList<>();
 		this.scale = tag.getFloat("scale");
@@ -67,21 +66,23 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 		this.zOffset = ZOffset.valueOf(tag.getString("z_offset"));
 		this.shadowType = tag.contains("shadow_type") ? ShadowType.valueOf(tag.getString("shadow_type")) : ShadowType.DROP;
 
-		ListTag lines = tag.getList("lines", 8);
-		for (Tag line : lines) {
+		NbtList lines = tag.getList("lines", 8);
+
+		for (NbtElement line : lines) {
 			this.lines.add(Text.Serializer.fromJson(line.asString()));
 		}
+		
 		this.renderDirty = true;
 	}
 
 	@Override
-	public void fromClientTag(CompoundTag compoundTag) {
-		this.fromTag(Glowcase.TEXT_BLOCK.getDefaultState(), compoundTag);
+	public void fromClientTag(NbtCompound NbtCompound) {
+		this.readNbt(NbtCompound);
 	}
 
 	@Override
-	public CompoundTag toClientTag(CompoundTag compoundTag) {
-		return this.toTag(compoundTag);
+	public NbtCompound toClientTag(NbtCompound NbtCompound) {
+		return this.writeNbt(NbtCompound);
 	}
 
 	public static void save(PacketContext context, PacketByteBuf buf) {
@@ -112,10 +113,10 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 		});
 	}
 
-	@Override
-	public double getSquaredRenderDistance() {
-		return MathHelper.clamp(this.scale * 12D, 40D, 400D);
-	}
+//	@Override
+//	public double getSquaredRenderDistance() {
+//		return MathHelper.clamp(this.scale * 12D, 40D, 400D);
+//	}
 
 	public enum TextAlignment {
 		LEFT, CENTER, RIGHT

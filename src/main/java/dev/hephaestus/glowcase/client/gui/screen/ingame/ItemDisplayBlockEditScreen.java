@@ -1,7 +1,6 @@
 package dev.hephaestus.glowcase.client.gui.screen.ingame;
 
 import dev.hephaestus.glowcase.GlowcaseNetworking;
-import dev.hephaestus.glowcase.block.ItemDisplayBlock;
 import dev.hephaestus.glowcase.block.entity.ItemDisplayBlockEntity;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
@@ -11,7 +10,6 @@ import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.TranslatableText;
@@ -31,8 +29,8 @@ public class ItemDisplayBlockEditScreen extends GlowcaseScreen {
 	}
 
 	@Override
-	public void init(MinecraftClient client, int width, int height) {
-		super.init(client, width, height);
+	public void init() {
+		super.init();
 
 		if (this.client != null) {
 			int padding = width / 100;
@@ -58,15 +56,10 @@ public class ItemDisplayBlockEditScreen extends GlowcaseScreen {
 				this.sync(false);
 			});
 
-			this.addButton(this.givesItemButtom);
-			this.addButton(this.rotationTypeButton);
-			this.addButton(this.showNameButton);
+			this.addDrawableChild(this.givesItemButtom);
+			this.addDrawableChild(this.rotationTypeButton);
+			this.addDrawableChild(this.showNameButton);
 		}
-	}
-
-	@Override
-	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		super.render(matrices, mouseX, mouseY, delta);
 	}
 
 	private void sync(boolean updatePitchAndYaw) {

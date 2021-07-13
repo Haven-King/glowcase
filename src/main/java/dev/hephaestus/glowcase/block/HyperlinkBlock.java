@@ -23,6 +23,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider {
 	private static final VoxelShape OUTLINE = VoxelShapes.cuboid(0.25, 0.25, 0.25, 0.75, 0.75, 0.75);
@@ -30,11 +31,6 @@ public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider
 	@Override
 	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
 		return OUTLINE;
-	}
-
-	@Override
-	public BlockEntity createBlockEntity(BlockView world) {
-		return new HyperlinkBlockEntity();
 	}
 
 	@Override
@@ -73,4 +69,9 @@ public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider
 		}
 	}
 
+	@Nullable
+	@Override
+	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+		return new HyperlinkBlockEntity(pos, state);
+	}
 }

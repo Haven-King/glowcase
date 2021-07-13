@@ -13,10 +13,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.*;
 import net.minecraft.client.util.SelectionManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
@@ -45,13 +42,13 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 	}
 
 	@Override
-	public void init(MinecraftClient client, int width, int height) {
-		super.init(client, width, height);
+	public void init() {
+		super.init();
 
 		int innerPadding = width / 100;
 
 		if (this.client != null) {
-			this.client.keyboard.enableRepeatEvents(true);
+			this.client.keyboard.setRepeatEvents(true);
 		}
 
 		this.selectionManager = new SelectionManager(
@@ -76,9 +73,9 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 
 		this.changeAlignment = new ButtonWidget(120 + innerPadding, 0, 160, 20, new TranslatableText("gui.glowcase.alignment", this.textBlockEntity.textAlignment), action -> {
 			switch (textBlockEntity.textAlignment) {
-				case LEFT:      textBlockEntity.textAlignment = TextBlockEntity.TextAlignment.CENTER;   break;
-				case CENTER:    textBlockEntity.textAlignment = TextBlockEntity.TextAlignment.RIGHT;    break;
-				case RIGHT:     textBlockEntity.textAlignment = TextBlockEntity.TextAlignment.LEFT;     break;
+				case LEFT -> textBlockEntity.textAlignment = TextBlockEntity.TextAlignment.CENTER;
+				case CENTER -> textBlockEntity.textAlignment = TextBlockEntity.TextAlignment.RIGHT;
+				case RIGHT -> textBlockEntity.textAlignment = TextBlockEntity.TextAlignment.LEFT;
 			}
 			this.textBlockEntity.renderDirty = true;
 
@@ -87,9 +84,9 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 
 		this.shadowToggle = new ButtonWidget(120 + innerPadding, 20 + innerPadding, 160, 20, new TranslatableText("gui.glowcase.shadow_type", this.textBlockEntity.shadowType), action -> {
 			switch (textBlockEntity.shadowType) {
-				case DROP:      textBlockEntity.shadowType = TextBlockEntity.ShadowType.PLATE;   break;
-				case PLATE:     textBlockEntity.shadowType = TextBlockEntity.ShadowType.NONE;    break;
-				case NONE:      textBlockEntity.shadowType = TextBlockEntity.ShadowType.DROP;     break;
+				case DROP -> textBlockEntity.shadowType = TextBlockEntity.ShadowType.PLATE;
+				case PLATE -> textBlockEntity.shadowType = TextBlockEntity.ShadowType.NONE;
+				case NONE -> textBlockEntity.shadowType = TextBlockEntity.ShadowType.DROP;
 			}
 			this.textBlockEntity.renderDirty = true;
 
@@ -106,21 +103,21 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 
 		this.zOffsetToggle = new ButtonWidget(330 + innerPadding * 3, 0, 80, 20, new LiteralText(this.textBlockEntity.zOffset.name()), action -> {
 			switch (textBlockEntity.zOffset) {
-				case FRONT:    textBlockEntity.zOffset = TextBlockEntity.ZOffset.CENTER;    break;
-				case CENTER:   textBlockEntity.zOffset = TextBlockEntity.ZOffset.BACK;      break;
-				case BACK:     textBlockEntity.zOffset = TextBlockEntity.ZOffset.FRONT;     break;
+				case FRONT -> textBlockEntity.zOffset = TextBlockEntity.ZOffset.CENTER;
+				case CENTER -> textBlockEntity.zOffset = TextBlockEntity.ZOffset.BACK;
+				case BACK -> textBlockEntity.zOffset = TextBlockEntity.ZOffset.FRONT;
 			}
 			this.textBlockEntity.renderDirty = true;
 
 			this.zOffsetToggle.setMessage(new LiteralText(this.textBlockEntity.zOffset.name()));
 		});
 
-		this.addButton(increaseSize);
-		this.addButton(decreaseSize);
-		this.addButton(this.changeAlignment);
-		this.addButton(this.shadowToggle);
-		this.addButton(this.zOffsetToggle);
-		this.addChild(this.colorEntryWidget);
+		this.addDrawableChild(increaseSize);
+		this.addDrawableChild(decreaseSize);
+		this.addDrawableChild(this.changeAlignment);
+		this.addDrawableChild(this.shadowToggle);
+		this.addDrawableChild(this.zOffsetToggle);
+		this.addDrawableChild(this.colorEntryWidget);
 	}
 
 	@Override
@@ -202,7 +199,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 					RenderSystem.disableTexture();
 					RenderSystem.enableColorLogicOp();
 					RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-					bufferBuilder.begin(7, VertexFormats.POSITION_COLOR);
+					bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 					bufferBuilder.vertex(matrices.peek().getModel(), startX, caretEndY, 0.0F).color(0, 0, 255, 255).next();
 					bufferBuilder.vertex(matrices.peek().getModel(), endX, caretEndY, 0.0F).color(0, 0, 255, 255).next();
 					bufferBuilder.vertex(matrices.peek().getModel(), endX, caretStartY, 0.0F).color(0, 0, 255, 255).next();
@@ -250,19 +247,19 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 				));
 				this.textBlockEntity.renderDirty = true;
 				++this.currentRow;
-				this.selectionManager.moveCaretToEnd();
+				this.selectionManager.moveCursorToEnd(false);
 				return true;
 			} else if (keyCode == GLFW.GLFW_KEY_UP) {
 				this.currentRow = Math.max(this.currentRow - 1, 0);
-				this.selectionManager.moveCaretToEnd();
+				this.selectionManager.moveCursorToEnd(false);
 				return true;
 			} else if (keyCode == GLFW.GLFW_KEY_DOWN) {
 				this.currentRow = Math.min(this.currentRow + 1, (this.textBlockEntity.lines.size() - 1));
-				this.selectionManager.moveCaretToEnd();
+				this.selectionManager.moveCursorToEnd(false);
 				return true;
 			} else if (keyCode == GLFW.GLFW_KEY_BACKSPACE && this.currentRow > 0 && this.textBlockEntity.lines.size() > 1 && this.selectionManager.getSelectionStart() == 0 && this.selectionManager.getSelectionEnd() == this.selectionManager.getSelectionStart()) {
 				--this.currentRow;
-				this.selectionManager.moveCaretToEnd();
+				this.selectionManager.moveCursorToEnd(false);
 				this.textBlockEntity.lines.set(this.currentRow,
 						this.textBlockEntity.lines.get(this.currentRow).append(this.textBlockEntity.lines.get(this.currentRow + 1))
 				);
