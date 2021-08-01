@@ -1,15 +1,16 @@
 package dev.hephaestus.glowcase.block;
 
 import dev.hephaestus.glowcase.Glowcase;
-import dev.hephaestus.glowcase.mixin.block.EntityShapeContextAccessor;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.EntityShapeContext;
 import net.minecraft.block.Material;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
@@ -25,7 +26,10 @@ public class GlowcaseBlock extends Block {
 
 	@Override
 	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-		if (((EntityShapeContextAccessor) context).heldItem().isIn(Glowcase.ITEM_TAG) && context != ShapeContext.absent()) {
+		if (context != ShapeContext.absent() && context instanceof EntityShapeContext econtext &&
+			econtext.getEntity().isPresent() && econtext.getEntity().get() instanceof LivingEntity living &&
+			living.getMainHandStack().isIn(Glowcase.ITEM_TAG)
+		) {
 			return VoxelShapes.fullCube();
 		} else {
 			return PSEUDO_EMPTY;
