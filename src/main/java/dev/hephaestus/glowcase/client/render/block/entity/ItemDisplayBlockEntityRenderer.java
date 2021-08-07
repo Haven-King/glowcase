@@ -95,20 +95,12 @@ public record ItemDisplayBlockEntityRenderer(BlockEntityRendererFactory.Context 
 				matrices.translate(0, 0, -0.4);
 
 				float scale = 0.025F;
-				matrices.scale(scale, scale, scale);
+				matrices.scale(scale, scale, -scale);
 
 				int color = name.getStyle().getColor() == null ? 0xFFFFFF : name.getStyle().getColor().getRgb();
 				matrices.translate(-MinecraftClient.getInstance().textRenderer.getWidth(name) / 2F, -4, 0);
 
-				MinecraftClient.getInstance().textRenderer.draw(name, 0, 0, color, false, matrices.peek().getModel(), vertexConsumers, false, 0, 0xF000F0);
-
-				// doing shadow manually because the way text renderer adds the
-				// shadow offset is wrong
-				// this is going to slightly break with unicode fonts too since
-				// they use an offset of 0.5 instead of 1 but better than nothing
-				matrices.translate(1.0, 1.0, 0.03);
-				int shadowColor = (int) ((color & 0xFF) * 0.25) | (int) ((color >> 8 & 0xFF) * 0.25) << 8 | (int) ((color >> 16 & 0xFF) * 0.25) << 16 | color & 0xFF000000;
-				MinecraftClient.getInstance().textRenderer.draw(name, 0, 0, shadowColor, false, matrices.peek().getModel(), vertexConsumers, false, 0, 0xF000F0);
+				MinecraftClient.getInstance().textRenderer.draw(name, 0, 0, color, true, matrices.peek().getModel(), vertexConsumers, false, 0, 0xF000F0);
 			}
 		}
 

@@ -3,13 +3,14 @@
   "package": "dev.hephaestus.glowcase.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "block.EntityShapeContextAccessor",
+    "block.EntityShapeContextAccessor"
   ],
   "client": [
     "client.MinecraftClientAccessor",
     "client.render.ber.RenderPhaseAccessor",
     "client.render.ber.WorldRendererMixin",
-    "client.render.entity.EntityRenderDispatcherAccessor"
+    "client.render.entity.EntityRenderDispatcherAccessor",
+    "client.TextRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
