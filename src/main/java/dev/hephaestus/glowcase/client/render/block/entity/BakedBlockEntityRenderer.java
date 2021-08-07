@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.fabricmc.fabric.api.client.rendering.v1.InvalidateRenderStateCallback;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.VertexBuffer;
@@ -16,13 +17,17 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 public abstract class BakedBlockEntityRenderer<T extends BlockEntity> implements BlockEntityRenderer<T> {
+	private static final boolean USE_CANVAS_HACK = FabricLoader.getInstance().isModLoaded("canvas");
+
 	protected final BlockEntityRendererFactory.Context context;
 
 	protected BakedBlockEntityRenderer(BlockEntityRendererFactory.Context context) {
@@ -229,6 +234,14 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> implements
 			double camZ = vec3d.getZ();
 			RenderRegionPos centerRegion = new RenderRegionPos((int)camX >> REGION_SHIFT, (int)camZ >> REGION_SHIFT);
 
+			if (USE_CANVAS_HACK) {
+				float pitch = camera.getPitch();
+				float yaw = camera.getYaw();
+				matrices.push();
+				matrices.multiply(new Quaternion(Vec3f.POSITIVE_X, pitch, true));
+				matrices.multiply(new Quaternion(Vec3f.POSITIVE_Y, yaw + 180, true));
+			}
+
 			// Iterate over all RegionBuilders, render and upload to RegionBuffers
 			Set<RenderLayer> usedRenderLayers = new ObjectArraySet<>();
 			List<BlockEntity> blockEntities = new ArrayList<>();
@@ -292,6 +305,10 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> implements
 					}
 				}
 				layer.endDrawing();
+			}
+
+			if (USE_CANVAS_HACK) {
+				matrices.pop();
 			}
 		}
 

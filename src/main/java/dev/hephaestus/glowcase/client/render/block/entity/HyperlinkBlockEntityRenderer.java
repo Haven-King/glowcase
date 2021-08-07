@@ -32,9 +32,10 @@ public record HyperlinkBlockEntityRenderer(BlockEntityRendererFactory.Context co
 		HitResult hitResult = MinecraftClient.getInstance().crosshairTarget;
 		if (hitResult instanceof BlockHitResult && ((BlockHitResult) hitResult).getBlockPos().equals(entity.getPos())) {
 			float scale = 0.025F;
-			matrices.scale(scale, scale, scale);
+			matrices.scale(scale, scale, -scale);
 			matrices.translate(-MinecraftClient.getInstance().textRenderer.getWidth(entity.url) / 2F, -4, 0);
-			MinecraftClient.getInstance().textRenderer.drawWithShadow(matrices, entity.url, 0, 0, 0xFFFFFF);
+
+			MinecraftClient.getInstance().textRenderer.draw(entity.url, 0, 0, -1, true, matrices.peek().getModel(), vertexConsumers, false, 0, 0xF000F0);
 		}
 		matrices.pop();
 	}
