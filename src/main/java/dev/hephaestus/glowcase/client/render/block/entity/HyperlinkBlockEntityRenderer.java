@@ -34,7 +34,19 @@ public record HyperlinkBlockEntityRenderer(BlockEntityRendererFactory.Context co
 			float scale = 0.025F;
 			matrices.scale(scale, scale, scale);
 			matrices.translate(-MinecraftClient.getInstance().textRenderer.getWidth(entity.url) / 2F, -4, 0);
-			MinecraftClient.getInstance().textRenderer.drawWithShadow(matrices, entity.url, 0, 0, 0xFFFFFF);
+
+			String name = entity.url;
+			int color = -1;
+
+			MinecraftClient.getInstance().textRenderer.draw(name, 0, 0, color, false, matrices.peek().getModel(), vertexConsumers, false, 0, 0xF000F0);
+
+			// doing shadow manually because the way text renderer adds the
+			// shadow offset is wrong
+			// this is going to slightly break with unicode fonts too since
+			// they use an offset of 0.5 instead of 1 but better than nothing
+			matrices.translate(1.0, 1.0, 0.03);
+			int shadowColor = (int) ((color & 0xFF) * 0.25) | (int) ((color >> 8 & 0xFF) * 0.25) << 8 | (int) ((color >> 16 & 0xFF) * 0.25) << 16 | color & 0xFF000000;
+			MinecraftClient.getInstance().textRenderer.draw(name, 0, 0, shadowColor, false, matrices.peek().getModel(), vertexConsumers, false, 0, 0xF000F0);
 		}
 		matrices.pop();
 	}
