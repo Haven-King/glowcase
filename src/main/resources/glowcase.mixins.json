@@ -2,9 +2,7 @@
   "required": true,
   "package": "dev.hephaestus.glowcase.mixin",
   "compatibilityLevel": "JAVA_8",
-  "mixins": [
-    "block.EntityShapeContextAccessor",
-  ],
+  "mixins": [],
   "client": [
     "client.MinecraftClientAccessor",
     "client.render.ber.RenderPhaseAccessor",
