@@ -98,7 +98,7 @@ public class ItemDisplayBlockChannel implements ModInitializer, ClientModInitial
 
                 player.world.setBlockState(pos, player.world.getBlockState(pos).with(Properties.ROTATION, rotation));
 
-                be.sync();
+                be.markDirty();
             }
         });
     }

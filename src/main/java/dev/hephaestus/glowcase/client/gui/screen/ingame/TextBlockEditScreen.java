@@ -119,9 +119,9 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 	}
 
 	@Override
-	public void onClose() {
-		TextBlockChannel.save(this.textBlockEntity);
-		super.onClose();
+	public void close() {
+		TextBlockChannel.sync(this.textBlockEntity);
+		super.close();
 	}
 
 	@Override
@@ -178,10 +178,10 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 					RenderSystem.enableColorLogicOp();
 					RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
 					bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-					bufferBuilder.vertex(matrices.peek().getModel(), startX, caretEndY, 0.0F).color(0, 0, 255, 255).next();
-					bufferBuilder.vertex(matrices.peek().getModel(), endX, caretEndY, 0.0F).color(0, 0, 255, 255).next();
-					bufferBuilder.vertex(matrices.peek().getModel(), endX, caretStartY, 0.0F).color(0, 0, 255, 255).next();
-					bufferBuilder.vertex(matrices.peek().getModel(), startX, caretStartY, 0.0F).color(0, 0, 255, 255).next();
+					bufferBuilder.vertex(matrices.peek().getPositionMatrix(), startX, caretEndY, 0.0F).color(0, 0, 255, 255).next();
+					bufferBuilder.vertex(matrices.peek().getPositionMatrix(), endX, caretEndY, 0.0F).color(0, 0, 255, 255).next();
+					bufferBuilder.vertex(matrices.peek().getPositionMatrix(), endX, caretStartY, 0.0F).color(0, 0, 255, 255).next();
+					bufferBuilder.vertex(matrices.peek().getPositionMatrix(), startX, caretStartY, 0.0F).color(0, 0, 255, 255).next();
 					bufferBuilder.end();
 					BufferRenderer.draw(bufferBuilder);
 					RenderSystem.disableColorLogicOp();
@@ -195,7 +195,7 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 	}
 
 	@Override
-	public boolean isPauseScreen() {
+	public boolean shouldPause() {
 		return false;
 	}
 
@@ -212,7 +212,12 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 		if (this.colorEntryWidget.isActive()) {
-			return this.colorEntryWidget.keyPressed(keyCode, scanCode, modifiers);
+			if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+				this.close();
+				return true;
+			} else {
+				return this.colorEntryWidget.keyPressed(keyCode, scanCode, modifiers);
+			}
 		} else {
 			this.focusOn(null);
 			if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
@@ -267,6 +272,9 @@ public class TextBlockEditScreen extends GlowcaseScreen {
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		int topOffset = (int) (40 + 2 * this.width / 100F);
+		if (!this.colorEntryWidget.mouseClicked(mouseX, mouseY, button)) {
+			this.colorEntryWidget.setTextFieldFocused(false);
+		}
 		if (mouseY > topOffset) {
 			this.currentRow = MathHelper.clamp((int) (mouseY - topOffset) / 12, 0, this.textBlockEntity.lines.size() - 1);
 			this.setFocused(null);

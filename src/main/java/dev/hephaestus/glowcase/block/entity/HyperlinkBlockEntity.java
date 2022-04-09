@@ -1,17 +1,19 @@
 package dev.hephaestus.glowcase.block.entity;
 
 import dev.hephaestus.glowcase.Glowcase;
-import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
-import net.fabricmc.fabric.api.network.PacketContext;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.Packet;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.regex.Pattern;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 
-public class HyperlinkBlockEntity extends BlockEntity implements BlockEntityClientSerializable {
+public class HyperlinkBlockEntity extends BlockEntity {
 	public String url = "";
 
 	public HyperlinkBlockEntity(BlockPos pos, BlockState state) {
@@ -19,12 +21,17 @@ public class HyperlinkBlockEntity extends BlockEntity implements BlockEntityClie
 	}
 
 	@Override
-	public NbtCompound writeNbt(NbtCompound tag) {
+	public NbtCompound toInitialChunkDataNbt() {
+		NbtCompound tag = super.toInitialChunkDataNbt();
+		writeNbt(tag);
+		return tag;
+	}
+
+	@Override
+	public void writeNbt(NbtCompound tag) {
 		super.writeNbt(tag);
 
 		tag.putString("url", this.url);
-
-		return tag;
 	}
 
 	@Override
@@ -35,12 +42,14 @@ public class HyperlinkBlockEntity extends BlockEntity implements BlockEntityClie
 	}
 
 	@Override
-	public void fromClientTag(NbtCompound NbtCompound) {
-		this.readNbt(NbtCompound);
+	public void markDirty() {
+		PlayerLookup.tracking(this).forEach(player -> player.networkHandler.sendPacket(toUpdatePacket()));
+		super.markDirty();
 	}
 
+	@Nullable
 	@Override
-	public NbtCompound toClientTag(NbtCompound NbtCompound) {
-		return this.writeNbt(NbtCompound);
+	public Packet<ClientPlayPacketListener> toUpdatePacket() {
+		return BlockEntityUpdateS2CPacket.create(this);
 	}
 }

@@ -1,10 +1,8 @@
 package dev.hephaestus.glowcase.block.entity;
 
 import dev.hephaestus.glowcase.Glowcase;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
-import net.fabricmc.fabric.api.network.PacketContext;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
@@ -12,14 +10,22 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.Packet;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.world.World;
 
-public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityClientSerializable {
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.server.PlayerStream;
+
+public class ItemDisplayBlockEntity extends BlockEntity {
 	private ItemStack stack = ItemStack.EMPTY;
 	private Entity displayEntity = null;
 
@@ -31,6 +37,23 @@ public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityCl
 
 	public ItemDisplayBlockEntity(BlockPos pos, BlockState state) {
 		super(Glowcase.ITEM_DISPLAY_BLOCK_ENTITY, pos, state);
+	}
+
+	@Override
+	public NbtCompound toInitialChunkDataNbt() {
+		NbtCompound tag = super.toInitialChunkDataNbt();
+		writeNbt(tag);
+		return tag;
+	}
+
+	@Override
+	public void writeNbt(NbtCompound tag) {
+		super.writeNbt(tag);
+		tag.put("item", this.stack.writeNbt(new NbtCompound()));
+		tag.putString("rotation_type", this.rotationType.name());
+		tag.putFloat("pitch", this.pitch);
+		tag.putFloat("yaw", this.yaw);
+		tag.putBoolean("show_name", this.showName);
 	}
 
 	@Override
@@ -58,25 +81,15 @@ public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityCl
 	}
 
 	@Override
-	public NbtCompound writeNbt(NbtCompound tag) {
-		tag.put("item", this.stack.writeNbt(new NbtCompound()));
-		tag.putString("rotation_type", this.rotationType.name());
-		tag.putFloat("pitch", this.pitch);
-		tag.putFloat("yaw", this.yaw);
-		tag.putBoolean("show_name", this.showName);
-
-		return super.writeNbt(tag);
+	public void markDirty() {
+		PlayerLookup.tracking(this).forEach(player -> player.networkHandler.sendPacket(toUpdatePacket()));
+		super.markDirty();
 	}
 
+	@Nullable
 	@Override
-	public void fromClientTag(NbtCompound NbtCompound) {
-		this.readNbt(NbtCompound);
-		this.setDisplayEntity();
-	}
-
-	@Override
-	public NbtCompound toClientTag(NbtCompound NbtCompound) {
-		return this.writeNbt(NbtCompound);
+	public Packet<ClientPlayPacketListener> toUpdatePacket() {
+		return BlockEntityUpdateS2CPacket.create(this);
 	}
 
 	public boolean hasItem() {
@@ -88,7 +101,7 @@ public class ItemDisplayBlockEntity extends BlockEntity implements BlockEntityCl
 
 		this.setDisplayEntity();
 
-		this.sync();
+		this.markDirty();
 	}
 
 	private void setDisplayEntity() {

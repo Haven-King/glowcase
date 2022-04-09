@@ -84,7 +84,7 @@ public class HyperlinkChannel implements ModInitializer, ClientModInitializer {
 
             if (blockEntity instanceof HyperlinkBlockEntity && URL.matcher(url).matches()) {
                 ((HyperlinkBlockEntity) blockEntity).url = url;
-                ((HyperlinkBlockEntity) blockEntity).sync();
+                blockEntity.markDirty();
             }
         });
     }

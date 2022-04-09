@@ -56,20 +56,20 @@ public class ItemDisplayBlock extends GlowcaseBlock implements BlockEntityProvid
 		if (!world.isClient) {
 			BlockEntity blockEntity = world.getBlockEntity(pos);
 			ItemStack handStack = player.getStackInHand(hand);
-			if (blockEntity instanceof ItemDisplayBlockEntity) {
-				if (((ItemDisplayBlockEntity) blockEntity).givesItem && ((ItemDisplayBlockEntity) blockEntity).hasItem() && handStack.isEmpty()) {
-					player.setStackInHand(hand, ((ItemDisplayBlockEntity) blockEntity).getUseStack().copy());
+			if (blockEntity instanceof ItemDisplayBlockEntity itemDisplay) {
+				if (itemDisplay.givesItem && itemDisplay.hasItem() && handStack.isEmpty()) {
+					player.setStackInHand(hand, itemDisplay.getUseStack().copy());
 					return ActionResult.SUCCESS;
 				} else if (player.isCreative() && world.canPlayerModifyAt(player, pos)) {
-					if (!((ItemDisplayBlockEntity) blockEntity).hasItem() && !handStack.isEmpty()) {
-						((ItemDisplayBlockEntity) blockEntity).setStack(handStack.copy());
+					if (!itemDisplay.hasItem() && !handStack.isEmpty()) {
+						itemDisplay.setStack(handStack.copy());
 						return ActionResult.SUCCESS;
-					} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && ((ItemDisplayBlockEntity) blockEntity).getUseStack().isItemEqualIgnoreDamage(handStack)) {
+					} else if (itemDisplay.hasItem() && itemDisplay.getUseStack().isItemEqualIgnoreDamage(handStack)) {
 						ItemDisplayBlockChannel.openScreen((ServerPlayerEntity) player, pos);
 
 						return ActionResult.SUCCESS;
-					} else if (((ItemDisplayBlockEntity) blockEntity).hasItem() && handStack.isIn(Glowcase.ITEM_TAG)) {
-						((ItemDisplayBlockEntity) blockEntity).setStack(ItemStack.EMPTY);
+					} else if (itemDisplay.hasItem() && handStack.isIn(Glowcase.ITEM_TAG)) {
+						itemDisplay.setStack(ItemStack.EMPTY);
 						return ActionResult.SUCCESS;
 					}
 				}

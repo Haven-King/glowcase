@@ -38,7 +38,7 @@ public class HyperlinkBlockEditScreen extends GlowcaseScreen {
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 		if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE) {
-			this.onClose();
+			this.close();
 			return true;
 		} else if (this.urlEntryWidget.isActive()) {
 			return this.urlEntryWidget.keyPressed(keyCode, scanCode, modifiers);
@@ -48,8 +48,8 @@ public class HyperlinkBlockEditScreen extends GlowcaseScreen {
 	}
 
 	@Override
-	public void onClose() {
+	public void close() {
 		HyperlinkChannel.save(this.hyperlinkBlockEntity.getPos(), this.urlEntryWidget.getText());
-		super.onClose();
+		super.close();
 	}
 }

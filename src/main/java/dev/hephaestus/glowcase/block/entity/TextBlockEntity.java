@@ -1,25 +1,29 @@
 package dev.hephaestus.glowcase.block.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import dev.hephaestus.glowcase.Glowcase;
 import dev.hephaestus.glowcase.client.render.block.entity.BakedBlockEntityRenderer;
-import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
-import net.fabricmc.fabric.api.network.PacketContext;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.Packet;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.List;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 
-public class TextBlockEntity extends BlockEntity implements BlockEntityClientSerializable {
+public class TextBlockEntity extends BlockEntity {
 	public List<MutableText> lines = new ArrayList<>();
 	public TextAlignment textAlignment = TextAlignment.CENTER;
 	public  ZOffset zOffset = ZOffset.CENTER;
@@ -34,7 +38,14 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 	}
 
 	@Override
-	public NbtCompound writeNbt(NbtCompound tag) {
+	public NbtCompound toInitialChunkDataNbt() {
+		NbtCompound tag = super.toInitialChunkDataNbt();
+		writeNbt(tag);
+		return tag;
+	}
+
+	@Override
+	public void writeNbt(NbtCompound tag) {
 		super.writeNbt(tag);
 
 		tag.putFloat("scale", this.scale);
@@ -50,8 +61,6 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 		}
 
 		tag.put("lines", lines);
-
-		return tag;
 	}
 
 	@Override
@@ -76,13 +85,15 @@ public class TextBlockEntity extends BlockEntity implements BlockEntityClientSer
 	}
 
 	@Override
-	public void fromClientTag(NbtCompound NbtCompound) {
-		this.readNbt(NbtCompound);
+	public void markDirty() {
+		PlayerLookup.tracking(this).forEach(player -> player.networkHandler.sendPacket(toUpdatePacket()));
+		super.markDirty();
 	}
 
+	@Nullable
 	@Override
-	public NbtCompound toClientTag(NbtCompound NbtCompound) {
-		return this.writeNbt(NbtCompound);
+	public Packet<ClientPlayPacketListener> toUpdatePacket() {
+		return BlockEntityUpdateS2CPacket.create(this);
 	}
 
 	public enum TextAlignment {
