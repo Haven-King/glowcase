@@ -56,20 +56,24 @@ public class ItemDisplayBlock extends GlowcaseBlock implements BlockEntityProvid
 		if (!world.isClient) {
 			BlockEntity blockEntity = world.getBlockEntity(pos);
 			ItemStack handStack = player.getStackInHand(hand);
-			if (blockEntity instanceof ItemDisplayBlockEntity itemDisplay) {
-				if (itemDisplay.givesItem && itemDisplay.hasItem() && handStack.isEmpty()) {
-					player.setStackInHand(hand, itemDisplay.getUseStack().copy());
+			if (blockEntity instanceof ItemDisplayBlockEntity display) {
+				if (canGiveTo(display, player) && display.hasItem() && handStack.isEmpty()) {
+					player.setStackInHand(hand, display.getUseStack().copy());
+					if (!player.isCreative()) {
+						display.givenTo.add(player.getUuid());
+						display.markDirty();
+					}
 					return ActionResult.SUCCESS;
 				} else if (player.isCreative() && world.canPlayerModifyAt(player, pos)) {
-					if (!itemDisplay.hasItem() && !handStack.isEmpty()) {
-						itemDisplay.setStack(handStack.copy());
+					if (!display.hasItem() && !handStack.isEmpty()) {
+						display.setStack(handStack.copy());
 						return ActionResult.SUCCESS;
-					} else if (itemDisplay.hasItem() && itemDisplay.getUseStack().isItemEqualIgnoreDamage(handStack)) {
+					} else if (display.hasItem() && display.getUseStack().isItemEqualIgnoreDamage(handStack)) {
 						ItemDisplayBlockChannel.openScreen((ServerPlayerEntity) player, pos);
 
 						return ActionResult.SUCCESS;
-					} else if (itemDisplay.hasItem() && handStack.isIn(Glowcase.ITEM_TAG)) {
-						itemDisplay.setStack(ItemStack.EMPTY);
+					} else if (display.hasItem() && handStack.isIn(Glowcase.ITEM_TAG)) {
+						display.setStack(ItemStack.EMPTY);
 						return ActionResult.SUCCESS;
 					}
 				}
@@ -79,6 +83,11 @@ public class ItemDisplayBlock extends GlowcaseBlock implements BlockEntityProvid
 		}
 
 		return ActionResult.SUCCESS;
+	}
+	
+	private boolean canGiveTo(ItemDisplayBlockEntity be, PlayerEntity player) {
+		if (be.givesItem == ItemDisplayBlockEntity.GivesItem.ONCE) return !be.givenTo.contains(player.getUuid()) || player.isCreative();
+		return be.givesItem == ItemDisplayBlockEntity.GivesItem.YES;
 	}
 
 	@Nullable

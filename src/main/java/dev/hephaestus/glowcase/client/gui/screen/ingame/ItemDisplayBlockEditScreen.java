@@ -30,7 +30,7 @@ public class ItemDisplayBlockEditScreen extends GlowcaseScreen {
 			int centerH = height / 2;
 
 			this.givesItemButtom = new ButtonWidget(centerW - 75, centerH - 30 - individualPadding, 150, 20, new TranslatableText("gui.glowcase.gives_item", this.displayBlock.givesItem), (action) -> {
-				this.displayBlock.givesItem = !this.displayBlock.givesItem;
+				this.displayBlock.cycleGiveType();
 				this.givesItemButtom.setMessage(new TranslatableText("gui.glowcase.gives_item", this.displayBlock.givesItem));
 				ItemDisplayBlockChannel.sync(this.displayBlock, true);
 			});
