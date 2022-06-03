@@ -8,7 +8,7 @@ import dev.hephaestus.glowcase.client.render.block.entity.TextBlockEntityRendere
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
@@ -24,9 +24,9 @@ import java.util.List;
 public class GlowcaseClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
-		BlockEntityRendererRegistry.INSTANCE.register(Glowcase.TEXT_BLOCK_ENTITY, TextBlockEntityRenderer::new);
-		BlockEntityRendererRegistry.INSTANCE.register(Glowcase.HYPERLINK_BLOCK_ENTITY, HyperlinkBlockEntityRenderer::new);
-		BlockEntityRendererRegistry.INSTANCE.register(Glowcase.ITEM_DISPLAY_BLOCK_ENTITY, ItemDisplayBlockEntityRenderer::new);
+		BlockEntityRendererRegistry.register(Glowcase.TEXT_BLOCK_ENTITY, TextBlockEntityRenderer::new);
+		BlockEntityRendererRegistry.register(Glowcase.HYPERLINK_BLOCK_ENTITY, HyperlinkBlockEntityRenderer::new);
+		BlockEntityRendererRegistry.register(Glowcase.ITEM_DISPLAY_BLOCK_ENTITY, ItemDisplayBlockEntityRenderer::new);
 
 		WorldRenderEvents.AFTER_ENTITIES.register(ctx ->
 			BakedBlockEntityRenderer.VertexBufferManager.INSTANCE.render(ctx.matrixStack(), ctx.projectionMatrix(), ctx.camera()));

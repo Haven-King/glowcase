@@ -69,11 +69,11 @@ public class TextBlockEntityRenderer extends BakedBlockEntityRenderer<TextBlockE
 				// Don't use the vanilla shadow rendering - it breaks when you try to use it in 3D
 				int shadowColor = 0x88000000;
 				matrices.translate(0, 0, -0.025D);
-				textRenderer.draw(blockEntity.lines.get(i), 1, (i * 12) + 1, shadowColor, false, matrices.peek().getModel(), vertexConsumers, false, 0, 15728880);
+				textRenderer.draw(blockEntity.lines.get(i), 1, (i * 12) + 1, shadowColor, false, matrices.peek().getPositionMatrix(), vertexConsumers, false, 0, 15728880);
 				matrices.translate(0, 0, 0.025D);
 			}
 
-			textRenderer.draw(blockEntity.lines.get(i), 0, i * 12, blockEntity.color, false, matrices.peek().getModel(), vertexConsumers, false, 0, 15728880);
+			textRenderer.draw(blockEntity.lines.get(i), 0, i * 12, blockEntity.color, false, matrices.peek().getPositionMatrix(), vertexConsumers, false, 0, 15728880);
 
 			matrices.pop();
 		}
@@ -97,7 +97,7 @@ public class TextBlockEntityRenderer extends BakedBlockEntityRenderer<TextBlockE
 		float blue = (float)(color & 255) / 255.0F;
 		float alpha = (float)(color >> 24 & 255) / 255.0F;
 		VertexConsumer consumer = vcp.getBuffer(plateRenderLayer);
-		Matrix4f matrix = matrices.peek().getModel();
+		Matrix4f matrix = matrices.peek().getPositionMatrix();
 		consumer.vertex(matrix, x1, y2, 0.0f)
 			.color(red, green, blue, alpha).next();
 		consumer.vertex(matrix, x2, y2, 0.0f)

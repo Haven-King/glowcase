@@ -17,7 +17,6 @@ import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.command.argument.BlockPosArgumentType;
@@ -25,7 +24,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.tag.Tag;
+import net.minecraft.tag.TagKey;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -35,7 +34,7 @@ public class Glowcase implements ModInitializer {
 	public static final String MODID = "glowcase";
 
 	public static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.build(id("items"), () -> new ItemStack(Items.GLOWSTONE));
-	public static final Tag<Item> ITEM_TAG = TagRegistry.item(id("items"));
+	public static final TagKey<Item> ITEM_TAG = TagKey.of(Registry.ITEM_KEY, id("items"));
 
 
 	public static final Block HYPERLINK_BLOCK = Registry.register(Registry.BLOCK, id("hyperlink_block"), new HyperlinkBlock());

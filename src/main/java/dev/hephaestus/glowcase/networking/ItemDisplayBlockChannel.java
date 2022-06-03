@@ -39,7 +39,7 @@ public class ItemDisplayBlockChannel implements ModInitializer, ClientModInitial
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeBlockPos(itemDisplayBlockEntity.getPos());
         buf.writeEnumConstant(itemDisplayBlockEntity.rotationType);
-        buf.writeBoolean(itemDisplayBlockEntity.givesItem);
+        buf.writeEnumConstant(itemDisplayBlockEntity.givesItem);
         buf.writeVarInt(itemDisplayBlockEntity.getCachedState().get(Properties.ROTATION));
         buf.writeBoolean(itemDisplayBlockEntity.showName);
 
@@ -81,7 +81,7 @@ public class ItemDisplayBlockChannel implements ModInitializer, ClientModInitial
     private void save(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
         BlockPos pos = buf.readBlockPos();
         ItemDisplayBlockEntity.RotationType rotationType = buf.readEnumConstant(ItemDisplayBlockEntity.RotationType.class);
-        boolean givesItem = buf.readBoolean();
+        ItemDisplayBlockEntity.GivesItem givesItem = buf.readEnumConstant(ItemDisplayBlockEntity.GivesItem.class);
         int rotation = buf.readVarInt();
         boolean showName = buf.readBoolean();
 
@@ -98,7 +98,7 @@ public class ItemDisplayBlockChannel implements ModInitializer, ClientModInitial
 
                 player.world.setBlockState(pos, player.world.getBlockState(pos).with(Properties.ROTATION, rotation));
 
-                be.sync();
+                be.markDirty();
             }
         });
     }

@@ -31,7 +31,7 @@ public class TextBlockChannel implements ModInitializer, ClientModInitializer {
     private static final Identifier ID = Glowcase.id("channel", "text_block");
 
     @Environment(EnvType.CLIENT)
-    public static void save(TextBlockEntity textBlockEntity) {
+    public static void sync(TextBlockEntity textBlockEntity) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeBlockPos(textBlockEntity.getPos());
         buf.writeFloat(textBlockEntity.scale);
@@ -71,11 +71,11 @@ public class TextBlockChannel implements ModInitializer, ClientModInitializer {
     @Override
     public void onInitialize() {
         ServerPlayConnectionEvents.INIT.register(((handler, server) ->
-                ServerPlayNetworking.registerReceiver(handler, ID, this::openScreen))
+                ServerPlayNetworking.registerReceiver(handler, ID, this::save))
         );
     }
 
-    private void openScreen(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
+    private void save(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
         BlockPos pos = buf.readBlockPos();
         float scale = buf.readFloat();
         int lineCount = buf.readVarInt();
@@ -98,7 +98,7 @@ public class TextBlockChannel implements ModInitializer, ClientModInitializer {
                 ((TextBlockEntity) blockEntity).color = color;
                 ((TextBlockEntity) blockEntity).zOffset = zOffset;
                 ((TextBlockEntity) blockEntity).shadowType = shadowType;
-                ((TextBlockEntity) blockEntity).sync();
+                blockEntity.markDirty();
             }
         });
     }

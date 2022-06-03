@@ -1,20 +1,28 @@
 package dev.hephaestus.glowcase.block.entity;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.UUID;
+
 import dev.hephaestus.glowcase.Glowcase;
 import dev.hephaestus.glowcase.block.MailboxBlock;
-import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
-import net.fabricmc.fabric.api.util.NbtType;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.Packet;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.*;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.util.NbtType;
 
-public class MailboxBlockEntity extends BlockEntity implements BlockEntityClientSerializable {
+public class MailboxBlockEntity extends BlockEntity {
     private final Deque<Message> messages = new ArrayDeque<>();
     private UUID owner;
 
@@ -25,7 +33,6 @@ public class MailboxBlockEntity extends BlockEntity implements BlockEntityClient
     public void setOwner(ServerPlayerEntity player) {
         this.owner = player.getUuid();
         this.markDirty();
-        this.sync();
     }
 
     public void addMessage(Message message) {
@@ -36,14 +43,15 @@ public class MailboxBlockEntity extends BlockEntity implements BlockEntityClient
         }
 
         this.markDirty();
-        this.sync();
     }
 
     public void removeMessage() {
-        if (this.messages.removeFirst() != null && this.world != null && this.messages.isEmpty()) {
+        if (this.world != null && this.messages.isEmpty()) {
+            //whuh? This prooobably shouldn't happen, but if it does just reset the state to empty
+            this.world.setBlockState(this.pos, this.getCachedState().with(MailboxBlock.HAS_MAIL, false));
+        } else if (this.messages.removeFirst() != null && this.world != null && this.messages.isEmpty()) {
             this.world.setBlockState(this.pos, this.getCachedState().with(MailboxBlock.HAS_MAIL, false));
             this.markDirty();
-            this.sync();
         }
     }
 
@@ -56,7 +64,14 @@ public class MailboxBlockEntity extends BlockEntity implements BlockEntityClient
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
+    public NbtCompound toInitialChunkDataNbt() {
+        NbtCompound tag = super.toInitialChunkDataNbt();
+        writeNbt(tag);
+        return tag;
+    }
+
+    @Override
+    public void writeNbt(NbtCompound nbt) {
         super.writeNbt(nbt);
 
         nbt.putUuid("Owner", this.owner);
@@ -74,8 +89,6 @@ public class MailboxBlockEntity extends BlockEntity implements BlockEntityClient
         }
 
         nbt.put("Messages", list);
-
-        return nbt;
     }
 
     @Override
@@ -83,6 +96,7 @@ public class MailboxBlockEntity extends BlockEntity implements BlockEntityClient
         super.readNbt(nbt);
 
         this.owner = nbt.getUuid("Owner");
+        this.messages.clear();
 
         for (NbtElement element : nbt.getList("Messages", NbtType.COMPOUND)) {
             if (element instanceof NbtCompound message) {
@@ -96,13 +110,15 @@ public class MailboxBlockEntity extends BlockEntity implements BlockEntityClient
     }
 
     @Override
-    public void fromClientTag(NbtCompound tag) {
-        this.readNbt(tag);
+    public void markDirty() {
+        PlayerLookup.tracking(this).forEach(player -> player.networkHandler.sendPacket(toUpdatePacket()));
+        super.markDirty();
     }
 
+    @Nullable
     @Override
-    public NbtCompound toClientTag(NbtCompound tag) {
-        return this.writeNbt(tag);
+    public Packet<ClientPlayPacketListener> toUpdatePacket() {
+        return BlockEntityUpdateS2CPacket.create(this);
     }
 
     public UUID owner() {
@@ -115,7 +131,6 @@ public class MailboxBlockEntity extends BlockEntity implements BlockEntityClient
 
             this.messages.removeIf(message -> message.sender.equals(sender));
             this.markDirty();
-            this.sync();
         }
     }
 

@@ -137,7 +137,7 @@ public abstract class BakedBlockEntityRenderer<T extends BlockEntity> implements
 			public void render(RenderLayer rl, MatrixStack matrices, Matrix4f projectionMatrix) {
 				VertexBuffer buf = layerBuffers.get(rl);
 				// (yarn name is misleading - setShader actually calls draw)
-				buf.setShader(matrices.peek().getModel(), projectionMatrix, RenderSystem.getShader());
+				buf.setShader(matrices.peek().getPositionMatrix(), projectionMatrix, RenderSystem.getShader());
 			}
 
 			public void rebuild(RenderLayer rl, BufferBuilder newBuf) {
